@@ -213,7 +213,7 @@ export default {
         return -1;
       }
 
-      console.log('sorted', sorted);
+      // console.log('sorted', sorted);
       this.players.forEach((player, idx) => {
         this.players[idx].currentPosition = findWithAttr(sorted, 'final', this.players[idx].final) + 1;
       });
@@ -301,7 +301,7 @@ export default {
         this.nextPlayer(pix);
       }
 
-      console.log(score);
+      // console.log(score);
     },
   }, // end of methods
   mounted() {
