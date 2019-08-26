@@ -65,10 +65,10 @@ export default {
         width: 780,
         height: 'auto',
         draggable: true,
-      },
-      {
-        'before-close': (event) => { console.log('this will be called before the modal closes', event); },
       });
+      // {
+      //   'before-close': (event) => { console.log('this will be called before the modal closes', event); },
+      // }
     },
     getPossibleScores: function getPossibleScores() {
       // return array of possible values
@@ -81,12 +81,12 @@ export default {
         ops = [...ops, ...arr5thru29];
       }
       ops.push(0);
-      console.log(ops);
+      // console.log(ops);
       return ops;
     },
-    modalValueSet: function modalValueSet(value) {
-      console.log('value', value);
-    },
+    // modalValueSet: function modalValueSet(value) {
+    //   console.log('value', value);
+    // },
     saveScore: function saveScore(newValue) {
       // const ops = this.getPossibleScores();
       // let newValue = choice(ops);

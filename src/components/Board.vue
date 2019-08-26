@@ -341,7 +341,7 @@ export default {
   ready() {
     window.addEventListener('keypress', function keyUp(event) {
       // If down arrow was pressed...
-      console.log(event.keyCode, event.key);
+      // console.log(event.keyCode, event.key);
       if (event.keyCode === 40) {
         this.updateZoom(-0.1);
         return false;
