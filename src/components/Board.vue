@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div :style="{ transform: 'scale('+ zoomScale+')'}">
     <div class="board" v-for="section in sections" v-bind:key="section.name">
       <div class="col label">
         <div v-if="section.showHeader" :class="section.code" class="header cell">
@@ -27,7 +27,7 @@
         </div>
 
         <div class="cell category" v-for="category in section.categories" v-bind:key="category.code">
-          <ScoreInput :category="category" type="category" :playerIndex="pix" :player="player" :value="getScore(player, category)" @update-score="updateScore" />
+          <ScoreInput :category="category" type="category" :playerIndex="pix" :player="player" :value="getScore(player, category)" />
         </div>
 
         <div :class="section.code" class="cell total" v-for="total in section.totals" v-bind:key="total.code">
@@ -69,6 +69,11 @@
       </div>
     </div>
 
+    <!-- one modal -->
+    <modal name="hello-world">
+      hello, world!
+    </modal>
+
   </div>
 </template>
 
@@ -76,17 +81,19 @@
 /*
  - git repo
  x Players fixed-with col
- - center the while thing
- - have leader board on far right (sam is current and placent)
-  - have current info "Addison is up"
-  - have round 3/13 or whatever
+ x have leader board on far right (sam is current and placent)
+  x have current info "Addison is up"
+  x have round 3/13 or whatever
  x pass full player and full category to input
  x on input, if player is not current or if it already has a score... you need to double click to access it
  x if it was a double click, and a score was saved, pass (outOfOrderEntry = true)
     x then we know not to select "next" player
+ - center the while thing
  - add v-if transitions
+ - make the score input
+ - smart sizing, use the whole screen (height and width) TOUGH
 */
-
+import { EventBus } from '../event-bus';
 import ScoreInput from './ScoreInput.vue';
 
 export default {
@@ -96,6 +103,7 @@ export default {
   },
   data: () => (
     {
+      zoomScale: 1,
       mode: 'add-players',
       round: 1,
       roundMax: 13,
@@ -156,6 +164,10 @@ export default {
     }
   ), // end data
   methods: {
+    updateZoom: function updateZoom(amount) {
+      this.zoomScale += amount;
+      document.getElementsByTagName('body')[0].style.transform = `'scale('${this.zoomScale})'`;
+    },
     addPlayer: function addPlayer(name) {
       // eslint-disable-next-line
       const scores = {};
@@ -296,7 +308,7 @@ export default {
       // if it is the end of the round
       this.updatePositions();
 
-      if (!score.isOutOfOrderEntry) {
+      if (!score.isOutOfOrderEntry && score.value != null) {
         // next player
         this.nextPlayer(pix);
       }
@@ -317,6 +329,25 @@ export default {
     // this.players[3].scores['1s'] = 3;
     // this.players[4].scores['1s'] = 3;
     this.startGame();
+
+    EventBus.$on('modal-value-set', (score) => {
+      console.log('modal-value-set: score', score);
+      this.updateScore(score);
+      // playerIndex: this.playerIndex,
+      // categoryCode: this.category.code,
+      // value: selectedOption,
+    });
+  },
+  ready() {
+    window.addEventListener('keypress', function keyUp(event) {
+      // If down arrow was pressed...
+      console.log(event.keyCode, event.key);
+      if (event.keyCode === 40) {
+        this.updateZoom(-0.1);
+        return false;
+      }
+      return true;
+    });
   },
 };
 </script>

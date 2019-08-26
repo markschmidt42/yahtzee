@@ -1,3 +1,3 @@
 module.exports = {
-  publicPath: 'https://markschmidt42.github.io/yahtzee/dist/',
+  publicPath: process.env.NODE_ENV === 'production' ? 'https://markschmidt42.github.io/yahtzee/dist/' : '/',
 };

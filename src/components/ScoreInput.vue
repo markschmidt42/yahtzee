@@ -1,24 +1,30 @@
 <template>
-    <div
-      :class="[category.type, { active: hover }, { needs: (value == null) }, { used: (value != null) }]"
-      class="input"
-      type="text"
-      code:="this.category.code"
-      @mouseover="hover = true"
-      @mouseleave="hover = false"
-      @click="handleOnClick()"
-      @dblclick="handleOnDblClick()"
-      >
-        {{value}}
-    </div>
+  <div
+    :class="[category.type, { active: hover }, { needs: (value == null) }, { used: (value != null) }]"
+    class="input"
+    type="text"
+    code:="this.category.code"
+    @mouseover="hover = true"
+    @mouseleave="hover = false"
+    @click="handleOnClick()"
+    @dblclick="handleOnDblClick()"
+    >
+      {{value}}
+  </div>
 </template>
 
 <script>
+import ScoreModal from './ScoreModal.vue';
+
 // move to utility
-const choice = items => items[Math.floor(Math.random() * items.length)];
+// const choice = items => items[Math.floor(Math.random() * items.length)];
 
 export default {
   name: 'ScoreInput',
+  components: {
+    // eslint-disable-next-line
+    ScoreModal,
+  },
   props: ['playerIndex', 'player', 'category', 'value'],
   data: () => (
     {
@@ -32,7 +38,8 @@ export default {
         // retrun/cancel event
         return false;
       }
-      this.saveScore();
+      this.openModal();
+      // this.saveScore();
       return true;
     },
     handleOnDblClick: function handleOnDblClick() {
@@ -40,8 +47,28 @@ export default {
         // retrun/cancel event
         return false;
       }
-      this.saveScore();
+      this.openModal();
+      // this.saveScore();
       return true;
+    },
+    openModal: function openModal() {
+      this.$modal.show(ScoreModal, {
+        options: this.getPossibleScores(),
+        player: this.player,
+        playerIndex: this.playerIndex,
+        category: this.category,
+        value: this.value,
+        isOutOfOrderEntry: this.isOutOfOrderEntry(),
+      },
+      {
+        name: 'input-modal',
+        width: 780,
+        height: 'auto',
+        draggable: true,
+      },
+      {
+        'before-close': (event) => { console.log('this will be called before the modal closes', event); },
+      });
     },
     getPossibleScores: function getPossibleScores() {
       // return array of possible values
@@ -57,13 +84,16 @@ export default {
       console.log(ops);
       return ops;
     },
-    saveScore: function saveScore() {
-      const ops = this.getPossibleScores();
-      let newValue = choice(ops);
-      console.log('newValue', newValue);
-      if (this.value != null) {
-        newValue = null; // undo it
-      }
+    modalValueSet: function modalValueSet(value) {
+      console.log('value', value);
+    },
+    saveScore: function saveScore(newValue) {
+      // const ops = this.getPossibleScores();
+      // let newValue = choice(ops);
+      // console.log('newValue', newValue);
+      // if (this.value != null) {
+      //   newValue = null; // undo it
+      // }
       this.$emit('update-score', {
         playerIndex: this.playerIndex,
         categoryCode: this.category.code,
