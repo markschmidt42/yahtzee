@@ -39,7 +39,7 @@
     <div v-if="this.mode != 'add-players'" class="scorebaord">
       <div v-if="this.mode == 'playing'">
         <div class="rounds">Round <strong>{{round}}</strong> of {{roundMax}}</div>
-        <div class="roundsLeft">{{1+roundMax-round}} plays left</div>
+        <div class="roundsLeft">{{1+roundMax-round}} play{{1+roundMax-round != 1 ? 's' : ''}} left</div>
       </div>
       <div v-else>
         <div class="rounds">GAME OVER</div>
@@ -115,19 +115,19 @@ export default {
           code: 'upper-section',
           showHeader: true,
           categories: [
-            { code: '1s', name: 'Aces', how: 'Count and add only Aces', type: 'upper', options: [1, 2, 3, 4, 5] },
-            { code: '2s', name: 'Twos', how: 'Count and add only Twos', type: 'upper', options: [2, 4, 6, 8, 10] },
-            { code: '3s', name: 'Threes', how: 'Count and add only Threes', type: 'upper', options: [3, 6, 9, 12, 15] },
-            { code: '4s', name: 'Fours', how: 'Count and add only Fours', type: 'upper', options: [4, 8, 12, 16, 20] },
-            { code: '5s', name: 'Fives', how: 'Count and add only Fives', type: 'upper', options: [5, 10, 15, 20, 25] },
-            { code: '6s', name: 'Sixes', how: 'Count and add only Sixes', type: 'upper', options: [6, 12, 18, 24, 30] },
+            { code: '1s', name: 'Aces', how: 'Count and add only Aces', type: 'upper', options: [1, 2, 3, 4] },
+            { code: '2s', name: 'Twos', how: 'Count and add only Twos', type: 'upper', options: [2, 4, 6, 8] },
+            { code: '3s', name: 'Threes', how: 'Count and add only Threes', type: 'upper', options: [3, 6, 9, 12] },
+            { code: '4s', name: 'Fours', how: 'Count and add only Fours', type: 'upper', options: [4, 8, 12, 16] },
+            { code: '5s', name: 'Fives', how: 'Count and add only Fives', type: 'upper', options: [5, 10, 15, 20] },
+            { code: '6s', name: 'Sixes', how: 'Count and add only Sixes', type: 'upper', options: [6, 12, 18, 24] },
           ],
           totals: [
             { code: 'uts', name: 'Total', calc: ['1s', '2s', '3s', '4s', '5s', '6s'] },
             {
               code: 'bonus',
               name: 'Bonus',
-              how: 'If total score is 63 or higher. +35',
+              how: 'If total score is >= 63. +35',
               calc: 'upper-bonus',
             },
             { code: 'ugt', name: 'Upper Section Total', calc: ['uts', 'bonus'] },
@@ -149,7 +149,7 @@ export default {
           ],
           totals: [
             { code: 'flts', name: 'Lower Section Total', calc: ['3oak', '4oak', 'fh', 'smst', 'lgst', 'yhtz', 'chnc', 'yb'] },
-            { code: 'futs', name: 'Upper Section Total', calc: ['uts'] },
+            { code: 'futs', name: 'Upper Section Total', calc: ['ugt'] },
           ],
         },
         {
@@ -261,6 +261,7 @@ export default {
       }
     },
     nextRound: function nextRound() {
+      this.updatePositions();
       this.round += 1;
       if (this.round > this.roundMax) {
         this.endGame();
@@ -305,8 +306,9 @@ export default {
       this.players[pix].scores[score.categoryCode] = score.value;
       this.updatePlayerTotals(pix);
 
-      // if it is the end of the round
-      this.updatePositions();
+      if (this.round > 1) {
+        this.updatePositions();
+      }
 
       if (!score.isOutOfOrderEntry && score.value != null) {
         // next player
@@ -331,7 +333,7 @@ export default {
     this.startGame();
 
     EventBus.$on('modal-value-set', (score) => {
-      console.log('modal-value-set: score', score);
+      // console.log('modal-value-set: score', score);
       this.updateScore(score);
       // playerIndex: this.playerIndex,
       // categoryCode: this.category.code,

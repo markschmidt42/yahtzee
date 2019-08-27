@@ -3,7 +3,7 @@
     <h4>Please enter the <strong>{{category.name}}</strong><br/>score for <strong>{{player.name}}</strong></h4>
 
     <div class="options">
-      <div :class="{full: option === 0 || options.length <= 2}" v-for="option in options" v-bind:key="option" @click="handleClick(option)">
+      <div :class="{full: option === 0 || options.length <= 2, upper: options.length == 5}" v-for="option in options" v-bind:key="option" @click="handleClick(option)">
         <div class="option">{{option}}</div>
       </div>
       <div class="full" v-if="value !== null" @click="handleClick(null)">
@@ -109,6 +109,10 @@ div {
 .full {
   width: 100%;
   display: flex;
+}
+
+.upper .option {
+  min-width: 107px;
 }
 
 </style>

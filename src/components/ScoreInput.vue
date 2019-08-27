@@ -9,7 +9,7 @@
     @click="handleOnClick()"
     @dblclick="handleOnDblClick()"
     >
-      {{value}}
+      {{value == null && this.player.isCurrent ? category.name : value}}
   </div>
 </template>
 
@@ -80,6 +80,7 @@ export default {
         const arr5thru29 = Array.from(Array(30 - 5), (_, x) => x + 5);
         ops = [...ops, ...arr5thru29];
       }
+      ops = ops.reverse();
       ops.push(0);
       // console.log(ops);
       return ops;
@@ -121,6 +122,12 @@ export default {
 
     .total .used {
       background-color: unset;
+    }
+
+    .current .needs {
+      color: #aaa;
+      font-size:.8em;
+      padding: 12px 0;
     }
 
     .current .needs.active {
