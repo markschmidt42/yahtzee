@@ -11,6 +11,18 @@
           {{ player.name }}
         </li>
       </ol>
+
+      <div class="voice-help">
+        <strong>Say:</strong>
+        <ul>
+          <li>"Add Jane"</li>
+          <li>"Add player Jane"</li>
+          <li>"Add Jane, John and Bill"</li>
+          <li>"Add player Jane, John and Bill"</li>
+          <li v-if="players.length > 0">"Start/Play (the) game"</li>
+          <li v-if="players.length > 0">"Play Yahtzee"</li>
+        </ul>
+      </div>
     </div>
     <div v-if="mode != 'add-players'">
       <div v-for="section in sections" :key="section.name" class="board">
@@ -36,7 +48,7 @@
 
         <div v-for="(player, pix) in players" :key="player.name" :class="[(player.isCurrent) ? 'current' : '']" class="col player" :name="player.name">
           <div v-if="section.showHeader" :class="section.code" class="header cell">
-            <h3>{{ player.name }}</h3>
+            <h3>{{ player.name.substr(0, 7) }}</h3>
           </div>
 
           <div v-for="category in section.categories" :key="category.code" class="cell category">
@@ -178,7 +190,7 @@ export default {
             how: 'Count and add only Aces',
             type: 'upper',
             options: [1, 2, 3, 4],
-            listenFor: ['one', 'ones', 'aces'],
+            listenFor: ['one', 'ones', 'aces', '1s', '1'],
           },
           {
             code: '2s',
@@ -186,7 +198,7 @@ export default {
             how: 'Count and add only Twos',
             type: 'upper',
             options: [2, 4, 6, 8],
-            listenFor: ['two', 'twos'],
+            listenFor: ['two', 'twos', '2s', '2'],
           },
           {
             code: '3s',
@@ -194,7 +206,7 @@ export default {
             how: 'Count and add only Threes',
             type: 'upper',
             options: [3, 6, 9, 12],
-            listenFor: ['three', 'threes'],
+            listenFor: ['three', 'threes', '3s', '3'],
           },
           {
             code: '4s',
@@ -202,7 +214,7 @@ export default {
             how: 'Count and add only Fours',
             type: 'upper',
             options: [4, 8, 12, 16],
-            listenFor: ['four', 'fours'],
+            listenFor: ['four', 'fours', '4s', '4', 'floors', 'force'],
           },
           {
             code: '5s',
@@ -210,7 +222,7 @@ export default {
             how: 'Count and add only Fives',
             type: 'upper',
             options: [5, 10, 15, 20],
-            listenFor: ['five', 'fives'],
+            listenFor: ['five', 'fives', '5s', '5'],
           },
           {
             code: '6s',
@@ -218,7 +230,7 @@ export default {
             how: 'Count and add only Sixes',
             type: 'upper',
             options: [6, 12, 18, 24],
-            listenFor: ['six', 'sixes'],
+            listenFor: ['six', 'sixes', '6s', '6', 'sixers'],
           },
         ],
         totals: [
@@ -269,7 +281,7 @@ export default {
             how: 'Score 30',
             type: 'on-off',
             options: [30],
-            listenFor: ['small straight', 'small strait'],
+            listenFor: ['small straight', 'small strait', 'small street'],
           },
           {
             code: 'lgst',
@@ -277,7 +289,7 @@ export default {
             how: 'Score 40',
             type: 'on-off',
             options: [40],
-            listenFor: ['large straight', 'large strait'],
+            listenFor: ['large straight', 'large strait', 'large street'],
           },
           {
             code: 'yhtz',
@@ -292,7 +304,7 @@ export default {
             name: 'Chance',
             how: 'Add total of all dice',
             options: null,
-            listenFor: ['chance'],
+            listenFor: ['chance', 'champ', 'champs'],
           },
           {
             code: 'yb',
@@ -607,7 +619,12 @@ export default {
       return '';
     },
     listenForNames: function listenForNames() {
+      const self = this;
       annyang.addCommands({
+        'add (to) (the) schmidt\'s': function addSpecial() { self.addPlayers('Ava Mya Addison Dad Mom'); },
+        'add (to) (the) schmidt family': function addSpecial() { self.addPlayers('Ava Mya Addison Dad Mom'); },
+        'add (the) ninja turtles': function addSpecial() { self.addPlayers('Leonardo Raphael Donatello Michaelangelo'); },
+        'add (the) minions': function addSpecial() { self.addPlayers('Stewart Bob Kevin Mel'); },
         'add (player) :name': this.addPlayer,
         'add (players) *name': this.addPlayers,
         'start (the) game': this.startGame,
@@ -615,20 +632,56 @@ export default {
         'play yahtzee': this.startGame,
       });
 
+      annyang.debug(true);
       annyang.start();
     },
     listenForPlayerCommands: function listenForPlayerCommands() {
       annyang.removeCommands();
 
       // build reg exp to listen, based on what is available
-      const expression = `^enter score for (${this.getAvailableScoresForCurrentPlayer()})$`;
+      const expression = `(${this.getAvailableScoresForCurrentPlayer()})`;
       // console.log(expression);
 
       annyang.addCommands({
         // 'enter score for :category': this.voiceCommandOpenScoreModal,
         'enter score for category': {
           // regexp: /^enter score for (ones|aces|twos|threes|fours|fives|sixes)$/,
-          regexp: new RegExp(expression, 'i'),
+          regexp: new RegExp(`^enter score for ${expression}$`, 'i'),
+          callback: this.voiceCommandOpenScoreModal,
+        },
+        'escort for category': {
+          // regexp: /^enter score for (ones|aces|twos|threes|fours|fives|sixes)$/,
+          regexp: new RegExp(`^escort for ${expression}$`, 'i'),
+          callback: this.voiceCommandOpenScoreModal,
+        },
+        'underscore for category': {
+          // regexp: /^enter score for (ones|aces|twos|threes|fours|fives|sixes)$/,
+          regexp: new RegExp(`^underscore for ${expression}$`, 'i'),
+          callback: this.voiceCommandOpenScoreModal,
+        },
+        'add score for category': {
+          // regexp: /^enter score for (ones|aces|twos|threes|fours|fives|sixes)$/,
+          regexp: new RegExp(`^add score for ${expression}$`, 'i'),
+          callback: this.voiceCommandOpenScoreModal,
+        },
+        'a score for category': {
+          // regexp: /^enter score for (ones|aces|twos|threes|fours|fives|sixes)$/,
+          regexp: new RegExp(`^a score for ${expression}$`, 'i'),
+          callback: this.voiceCommandOpenScoreModal,
+        },
+        'end score for category': {
+          // regexp: /^enter score for (ones|aces|twos|threes|fours|fives|sixes)$/,
+          regexp: new RegExp(`^end score for ${expression}$`, 'i'),
+          callback: this.voiceCommandOpenScoreModal,
+        },
+        'in score for category': {
+          // regexp: /^enter score for (ones|aces|twos|threes|fours|fives|sixes)$/,
+          regexp: new RegExp(`^in score for ${expression}$`, 'i'),
+          callback: this.voiceCommandOpenScoreModal,
+        },
+        'at score for category': {
+          // regexp: /^enter score for (ones|aces|twos|threes|fours|fives|sixes)$/,
+          regexp: new RegExp(`^at score for ${expression}$`, 'i'),
           callback: this.voiceCommandOpenScoreModal,
         },
 
@@ -779,6 +832,16 @@ body {
 .add-players-container .player:hover {
   color: red;
   cursor: not-allowed;
+}
+
+.voice-help {
+  text-align: left;
+  color: #999;
+  font-size: 23px;
+}
+
+.voice-help ul {
+  list-style-type: none;
 }
 
 h3 {
