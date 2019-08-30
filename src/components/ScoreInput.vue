@@ -1,19 +1,25 @@
 <template>
   <div
-    :class="[category.type, { active: hover }, { needs: (value == null) }, { used: (value != null) }]"
+    v-if="loaded"
+    :class="[settings.category.type, { active: hover }, { needs: (value == null) }, { used: (value != null) }]"
     class="input"
     type="text"
-    code:="this.category.code"
+    code:="this.settings.category.code"
     @mouseover="hover = true"
     @mouseleave="hover = false"
     @click="handleOnClick()"
     @dblclick="handleOnDblClick()"
-    >
-      {{value == null && this.player.isCurrent ? category.name : value}}
+  >
+    {{ value == null && settings.player.isCurrent ? settings.category.name : value }}
   </div>
 </template>
 
 <script>
+// services
+import { EventBus } from '../event-bus';
+import categoryService from '../services/category.service';
+
+// components
 import ScoreModal from './ScoreModal.vue';
 
 // move to utility
@@ -25,16 +31,64 @@ export default {
     // eslint-disable-next-line
     ScoreModal,
   },
-  props: ['playerIndex', 'player', 'category', 'value'],
+  props: {
+    playerIndex: Number,
+    player: Object,
+    category: Object,
+    value: Number,
+    type: String,
+  },
   data: () => (
     {
+      loaded: false,
       hover: false,
+      settings: {
+        playerIndex: null,
+        player: null,
+        category: null,
+        // value: null,
+        type: null,
+      },
     }
   ),
+  mounted() {
+    // onload, copy props to data
+    this.settings.playerIndex = this.playerIndex;
+    this.settings.player = this.player;
+    this.settings.category = this.category;
+    // this.settings.value = this.value;
+    this.settings.type = this.type;
+    this.loaded = true;
+
+    EventBus.$on('click-score-input', (info) => {
+      // playerIndex: this.currentPlayerIndex,
+      // player: this.players[this.currentPlayerIndex],
+      // category,
+      // value: null,
+      // type: 'category',
+      if (info.category.code !== this.settings.category.code) {
+        return;
+      }
+      if (info.playerIndex !== this.settings.playerIndex) {
+        return;
+      }
+
+      // copy values from emit event, to the props
+      this.settings.playerIndex = info.playerIndex;
+      this.settings.player = info.player;
+      this.settings.category = info.category;
+      this.value = info.value;
+      this.settings.type = info.type;
+
+      this.openModal();
+
+      console.log('click-score-input', info);
+    });
+  },
   methods: {
-    isOutOfOrderEntry: function isOutOfOrderEntry() { return !this.player.isCurrent || this.value != null; },
+    isOutOfOrderEntry: function isOutOfOrderEntry() { return !this.settings.player.isCurrent || this.settings.value != null; },
     handleOnClick: function handleOnClick() {
-      if (this.isOutOfOrderEntry()) {
+      if (this.settings.type === 'total' || this.isOutOfOrderEntry()) {
         // retrun/cancel event
         return false;
       }
@@ -43,7 +97,7 @@ export default {
       return true;
     },
     handleOnDblClick: function handleOnDblClick() {
-      if (!this.isOutOfOrderEntry()) {
+      if (this.settings.type === 'total' || !this.isOutOfOrderEntry()) {
         // retrun/cancel event
         return false;
       }
@@ -52,11 +106,14 @@ export default {
       return true;
     },
     openModal: function openModal() {
+      EventBus.$emit('set-listen-mode-to-points', {
+        category: this.settings.category,
+      });
       this.$modal.show(ScoreModal, {
-        options: this.getPossibleScores(),
-        player: this.player,
-        playerIndex: this.playerIndex,
-        category: this.category,
+        options: categoryService.getPointOptions(this.settings.category),
+        player: this.settings.player,
+        playerIndex: this.settings.playerIndex,
+        category: this.settings.category,
         value: this.value,
         isOutOfOrderEntry: this.isOutOfOrderEntry(),
       },
@@ -70,21 +127,6 @@ export default {
       //   'before-close': (event) => { console.log('this will be called before the modal closes', event); },
       // }
     },
-    getPossibleScores: function getPossibleScores() {
-      // return array of possible values
-      let ops = []; // 0 is always an option
-      if (this.category.options) {
-        ops = [...ops, ...this.category.options];
-      } else {
-        // 5 thru 29
-        const arr5thru29 = Array.from(Array(30 - 5), (_, x) => x + 5);
-        ops = [...ops, ...arr5thru29];
-      }
-      ops = ops.reverse();
-      ops.push(0);
-      // console.log(ops);
-      return ops;
-    },
     // modalValueSet: function modalValueSet(value) {
     //   console.log('value', value);
     // },
@@ -96,8 +138,8 @@ export default {
       //   newValue = null; // undo it
       // }
       this.$emit('update-score', {
-        playerIndex: this.playerIndex,
-        categoryCode: this.category.code,
+        playerIndex: this.settings.playerIndex,
+        categoryCode: this.settings.category.code,
         value: newValue,
         isOutOfOrderEntry: this.isOutOfOrderEntry(),
       });

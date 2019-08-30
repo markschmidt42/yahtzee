@@ -1,82 +1,98 @@
 <template>
   <div :style="{ transform: 'scale('+ zoomScale+')'}">
-    <div class="add-players-container" v-if="this.mode == 'add-players'">
-      <input type="text" @keyup.enter="handleAddPlayer" ref="newPlayer" v-model="newPlayerName" maxlength="8" />
+    <div v-if="mode == 'add-players'" class="add-players-container">
+      <h2>Add Players:</h2>
+      <input ref="newPlayer" v-model="newPlayerName" type="text" maxlength="8" @keyup.enter="handleAddPlayer">
       <button href="#" @click="handleAddPlayer">Add Players</button>
       <button v-if="players.length > 0" href="#" @click="startGame">Start Game</button>
 
       <ol>
-      <li class="player" @click="handleRemovePlayer(pix)" v-bind:name="player.name" v-for="(player, pix) in players" v-bind:key="player.name">
-        {{ player.name }}
-      </li>
+        <li v-for="(player, pix) in players" :key="player.name" class="player" :name="player.name" @click="handleRemovePlayer(pix)">
+          {{ player.name }}
+        </li>
       </ol>
     </div>
-    <div v-if="this.mode != 'add-players'">
-      <div class="board" v-for="section in sections" v-bind:key="section.name">
+    <div v-if="mode != 'add-players'">
+      <div v-for="section in sections" :key="section.name" class="board">
         <div class="col label">
           <div v-if="section.showHeader" :class="section.code" class="header cell">
-            <h3>{{section.name}}</h3>
+            <h3>{{ section.name }}</h3>
           </div>
 
-          <div :class="section.code" class="cell category" v-for="category in section.categories" v-bind:key="category.code">
-            <strong>{{category.name}}</strong>
+          <div v-for="category in section.categories" :key="category.code" :class="section.code" class="cell category">
+            <strong>{{ category.name }}</strong>
             <div class="how">
-              {{category.how}}
+              {{ category.how }}
             </div>
           </div>
 
-          <div :class="section.code" class="cell total" v-for="total in section.totals" v-bind:key="total.code">
-            {{total.name}}
-            <div class="how" v-if="total.how">
-              {{total.how}}
+          <div v-for="total in section.totals" :key="total.code" :class="section.code" class="cell total">
+            {{ total.name }}
+            <div v-if="total.how" class="how">
+              {{ total.how }}
             </div>
           </div>
         </div>
 
-        <div :class="[(player.isCurrent) ? 'current' : '']" class="col player" v-bind:name="player.name" v-for="(player, pix) in players" v-bind:key="player.name">
-          <div :class="section.code" v-if="section.showHeader" class="header cell">
+        <div v-for="(player, pix) in players" :key="player.name" :class="[(player.isCurrent) ? 'current' : '']" class="col player" :name="player.name">
+          <div v-if="section.showHeader" :class="section.code" class="header cell">
             <h3>{{ player.name }}</h3>
           </div>
 
-          <div class="cell category" v-for="category in section.categories" v-bind:key="category.code">
-            <ScoreInput :category="category" type="category" :playerIndex="pix" :player="player" :value="getScore(player, category)" />
+          <div v-for="category in section.categories" :key="category.code" class="cell category">
+            <ScoreInput :category="category" type="category" :player-index="pix" :player="player" :value="getScore(player, category)" />
           </div>
 
-          <div :class="section.code" class="cell total" v-for="total in section.totals" v-bind:key="total.code">
-            <ScoreInput :category="total"  type="total" :value="player.scores[total.code] || 0" />
+          <div v-for="total in section.totals" :key="total.code" :class="section.code" class="cell total">
+            <ScoreInput :category="total" type="total" :value="player.scores[total.code] || 0" />
           </div>
         </div>
-      </div> <!-- end board -->
+      </div>
+      <!-- end board -->
     </div>
 
-    <div v-if="this.mode != 'add-players'" class="scorebaord">
-      <div v-if="this.mode == 'playing'">
-        <div class="rounds">Round <strong>{{round}}</strong> of {{roundMax}}</div>
-        <div class="roundsLeft">{{1+roundMax-round}} play{{1+roundMax-round != 1 ? 's' : ''}} left</div>
+    <div
+      v-if="mode != 'add-players'"
+      class="scorebaord"
+    >
+      <div v-if="mode == 'playing'">
+        <div class="rounds">Round <strong>{{ round }}</strong> of {{ roundMax }}</div>
+        <div class="roundsLeft">{{ 1+roundMax-round }} play{{ 1+roundMax-round != 1 ? 's' : '' }} left</div>
       </div>
       <div v-else>
-        <div class="rounds">GAME OVER</div>
+        <div class="rounds">
+          GAME OVER
+        </div>
         <div class="winner">
-          <h4>{{this.getPlayersByScore()[0].name}}<br/>IS THE WINNER</h4>
+          <h4>{{ getPlayersByScore()[0].name }}<br>IS THE WINNER</h4>
         </div>
       </div>
 
       <div class="leaderboard">
         <h4>Yahtzee Leaderboard</h4>
-        <div :class="['placement-'+ player.currentPosition]" v-bind:name="player.name" v-for="(player) in this.getPlayersByScore()" v-bind:key="player.name">
+        <div
+          v-for="(player) in getPlayersByScore()"
+          :key="player.name"
+          :class="['placement-'+ player.currentPosition]"
+          :name="player.name"
+        >
           <div class="item">
-            <div class="placement" v-html="getPlacement(player)"></div>
-            <div class="name">{{ player.name }}</div>
-            <div class="score">{{ player.final }}</div>
+            <div class="placement" v-html="getPlacement(player)" />
+            <div class="name">
+              {{ player.name }}
+            </div>
+            <div class="score">
+              {{ player.final }}
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="turn-info" v-if="this.mode !== 'end'">
-        <h4>{{this.players[currenmtPlayerIndex].name}}'s Turn</h4>
-        <div v-for="section in sections" v-bind:key="section.name">
-          <div v-for="category in section.categories" v-bind:key="category.code">
-            <div :class="[section.code, { used: getScore(players[currenmtPlayerIndex], category) !== null }]" class="cell category">{{category.name}}</div>
+      <div v-if="mode !== 'end'" class="turn-info">
+        <h4>{{ players[currentPlayerIndex].name }}'s Turn</h4>
+        <div v-for="category in getPlayerCategories()" :key="category.code">
+          <div :class="[category.sectionCode, { used: category.hasScore }]" class="cell category">
+            {{ category.name }}
           </div>
         </div>
       </div>
@@ -86,7 +102,6 @@
     <modal name="hello-world">
       hello, world!
     </modal>
-
   </div>
 </template>
 
@@ -106,19 +121,26 @@
  x make the score input
  - add the trophy/medals to the leader board (new function that returns image path (or v-html and the whole img tag))
  - smart sizing, use the whole screen (height and width) TOUGH (on resize, just mess with zoom/scale?)
- - add players
-    - (remove players)
+ x add players
+    x (remove players)
     - reorder players (v3), for now, you have to remove and ad in the right order
-    - Start game
- - voice control
+    x Start game
+ x voice control
 */
+
+// third-party
 import annyang from 'annyang';
+
+// services
 import { EventBus } from '../event-bus';
+import categoryService from '../services/category.service';
+
+// components
 import ScoreInput from './ScoreInput.vue';
 
 const utils = {
   // eslint-disable-next-line
-  toTitleCase: (str) => {
+  toTitleCase: str => {
     // eslint-disable-next-line
     return str.replace(
       /\w\S*/g,
@@ -131,79 +153,200 @@ const utils = {
   },
 };
 
-
 export default {
   name: 'Board',
   components: {
     ScoreInput,
   },
-  data: () => (
-    {
-      zoomScale: 1,
-      mode: 'add-players',
-      newPlayerName: '',
-      round: 1,
-      roundMax: 13,
-      currenmtPlayerIndex: 0,
-      players: [],
-      sections: [
-        {
-          name: 'Upper Section',
-          code: 'upper-section',
-          showHeader: true,
-          categories: [
-            { code: '1s', name: 'Aces', how: 'Count and add only Aces', type: 'upper', options: [1, 2, 3, 4] },
-            { code: '2s', name: 'Twos', how: 'Count and add only Twos', type: 'upper', options: [2, 4, 6, 8] },
-            { code: '3s', name: 'Threes', how: 'Count and add only Threes', type: 'upper', options: [3, 6, 9, 12] },
-            { code: '4s', name: 'Fours', how: 'Count and add only Fours', type: 'upper', options: [4, 8, 12, 16] },
-            { code: '5s', name: 'Fives', how: 'Count and add only Fives', type: 'upper', options: [5, 10, 15, 20] },
-            { code: '6s', name: 'Sixes', how: 'Count and add only Sixes', type: 'upper', options: [6, 12, 18, 24] },
-          ],
-          totals: [
-            { code: 'uts', name: 'Total', calc: ['1s', '2s', '3s', '4s', '5s', '6s'] },
-            {
-              code: 'bonus',
-              name: 'Bonus',
-              how: 'If total score is >= 63. +35',
-              calc: 'upper-bonus',
-            },
-            { code: 'ugt', name: 'Upper Section Total', calc: ['uts', 'bonus'] },
-          ],
-        },
-        {
-          name: 'Lower Section',
-          code: 'lower-section',
-          showHeader: true,
-          categories: [
-            { code: '3oak', name: '3 of a Kind', how: 'Add total of all dice', options: null },
-            { code: '4oak', name: '4 of a Kind', how: 'Add total of all dice', options: null },
-            { code: 'fh', name: 'Full House', how: 'Score 25', type: 'on-off', options: [25] },
-            { code: 'smst', name: 'Sm Straight', how: 'Score 30', type: 'on-off', options: [30] },
-            { code: 'lgst', name: 'Lg Straight', how: 'Score 40', type: 'on-off', options: [40] },
-            { code: 'yhtz', name: 'Yahtzee', how: 'Score 50', type: 'on-off', options: [50] },
-            { code: 'chnc', name: 'Chance', how: 'Add total of all dice', options: null },
-            { code: 'yb', name: 'Yahtzee Bonus', how: 'Score 100 per', type: 'yahtzee-bonus', options: [100, 200, 300, 400] },
-          ],
-          totals: [
-            { code: 'flts', name: 'Lower Section Total', calc: ['3oak', '4oak', 'fh', 'smst', 'lgst', 'yhtz', 'chnc', 'yb'] },
-            { code: 'futs', name: 'Upper Section Total', calc: ['ugt'] },
-          ],
-        },
-        {
-          name: 'Grand Total',
-          code: 'grand-total',
-          showHeader: false,
-          totals: [
-            { code: 'fgt', name: 'Grand Total', calc: ['flts', 'futs'] },
-          ],
-        },
-      ],
-    }
-  ), // end data
+  data: () => ({
+    zoomScale: 1,
+    mode: 'add-players',
+    newPlayerName: '',
+    round: 1,
+    roundMax: 13,
+    currentPlayerIndex: 0,
+    players: [],
+    sections: [
+      {
+        name: 'Upper Section',
+        code: 'upper-section',
+        showHeader: true,
+        categories: [
+          {
+            code: '1s',
+            name: 'Aces',
+            how: 'Count and add only Aces',
+            type: 'upper',
+            options: [1, 2, 3, 4],
+            listenFor: ['one', 'ones', 'aces'],
+          },
+          {
+            code: '2s',
+            name: 'Twos',
+            how: 'Count and add only Twos',
+            type: 'upper',
+            options: [2, 4, 6, 8],
+            listenFor: ['two', 'twos'],
+          },
+          {
+            code: '3s',
+            name: 'Threes',
+            how: 'Count and add only Threes',
+            type: 'upper',
+            options: [3, 6, 9, 12],
+            listenFor: ['three', 'threes'],
+          },
+          {
+            code: '4s',
+            name: 'Fours',
+            how: 'Count and add only Fours',
+            type: 'upper',
+            options: [4, 8, 12, 16],
+            listenFor: ['four', 'fours'],
+          },
+          {
+            code: '5s',
+            name: 'Fives',
+            how: 'Count and add only Fives',
+            type: 'upper',
+            options: [5, 10, 15, 20],
+            listenFor: ['five', 'fives'],
+          },
+          {
+            code: '6s',
+            name: 'Sixes',
+            how: 'Count and add only Sixes',
+            type: 'upper',
+            options: [6, 12, 18, 24],
+            listenFor: ['six', 'sixes'],
+          },
+        ],
+        totals: [
+          {
+            code: 'uts',
+            name: 'Total',
+            calc: ['1s', '2s', '3s', '4s', '5s', '6s'],
+          },
+          {
+            code: 'bonus',
+            name: 'Bonus',
+            how: 'If total score is >= 63. +35',
+            calc: 'upper-bonus',
+          },
+          { code: 'ugt', name: 'Upper Section Total', calc: ['uts', 'bonus'] },
+        ],
+      },
+      {
+        name: 'Lower Section',
+        code: 'lower-section',
+        showHeader: true,
+        categories: [
+          {
+            code: '3oak',
+            name: '3 of a Kind',
+            how: 'Add total of all dice',
+            options: null,
+            listenFor: ['3 of a kind', 'three of a kind'],
+          },
+          {
+            code: '4oak',
+            name: '4 of a Kind',
+            how: 'Add total of all dice',
+            listenFor: ['4 of a kind', 'four of a kind'],
+            options: null,
+          },
+          {
+            code: 'fh',
+            name: 'Full House',
+            how: 'Score 25',
+            type: 'on-off',
+            options: [25],
+            listenFor: ['full house'],
+          },
+          {
+            code: 'smst',
+            name: 'Sm Straight',
+            how: 'Score 30',
+            type: 'on-off',
+            options: [30],
+            listenFor: ['small straight', 'small strait'],
+          },
+          {
+            code: 'lgst',
+            name: 'Lg Straight',
+            how: 'Score 40',
+            type: 'on-off',
+            options: [40],
+            listenFor: ['large straight', 'large strait'],
+          },
+          {
+            code: 'yhtz',
+            name: 'Yahtzee',
+            how: 'Score 50',
+            type: 'on-off',
+            options: [50],
+            listenFor: ['yahtzee', 'yacht zee', 'yacht Z', 'yats zee'],
+          },
+          {
+            code: 'chnc',
+            name: 'Chance',
+            how: 'Add total of all dice',
+            options: null,
+            listenFor: ['chance'],
+          },
+          {
+            code: 'yb',
+            name: 'Yahtzee Bonus',
+            how: 'Score 100 per',
+            type: 'yahtzee-bonus',
+            options: [100, 200, 300, 400],
+            listenFor: ['yahtzee bonus', 'yacht zee bonus', 'yacht Z bonus', 'yats zee bonus'],
+          },
+        ],
+        totals: [
+          {
+            code: 'flts',
+            name: 'Lower Section Total',
+            calc: ['3oak', '4oak', 'fh', 'smst', 'lgst', 'yhtz', 'chnc', 'yb'],
+          },
+          { code: 'futs', name: 'Upper Section Total', calc: ['ugt'] },
+        ],
+      },
+      {
+        name: 'Grand Total',
+        code: 'grand-total',
+        showHeader: false,
+        totals: [{ code: 'fgt', name: 'Grand Total', calc: ['flts', 'futs'] }],
+      },
+    ],
+  }), // end of methods
+  mounted() {
+    this.resetGame();
+
+    EventBus.$on('modal-value-set', (score) => {
+      // console.log('modal-value-set: score', score);
+      this.updateScore(score);
+      // playerIndex: this.playerIndex,
+      // categoryCode: this.category.code,
+      // value: selectedOption,
+    });
+
+    EventBus.$on('set-listen-mode-to-points', (info) => {
+      // category: this.settings.category,
+      this.listenForPoints(info.category);
+    });
+
+    EventBus.$on('cancel-score-modal', () => {
+      // the ScoreModal.vue is listening too
+      this.listenForPlayerCommands();
+    });
+  }, // end data
   methods: {
     focusOnNewPlayerAdd: function focusOnNewPlayerAdd() {
       this.newPlayerName = '';
-      this.$refs.newPlayer.focus();
+      this.$nextTick(() => {
+        this.$refs.newPlayer.focus();
+      });
     },
     handleAddPlayer: function handleAddPlayer() {
       if (this.newPlayerName !== '') {
@@ -219,14 +362,16 @@ export default {
     },
     updateZoom: function updateZoom(amount) {
       this.zoomScale += amount;
-      document.getElementsByTagName('body')[0].style.transform = `'scale('${this.zoomScale})'`;
+      document.getElementsByTagName(
+        'body',
+      )[0].style.transform = `'scale('${this.zoomScale})'`;
     },
     addPlayers: function addPlayers(names) {
       // console.log(names);
       // console.log(names.split(' '));
       // names = space seperated
       names.split(' ').forEach((name) => {
-        if (name === 'and') {
+        if (name === '' || name === 'and') {
           return;
         }
         this.addPlayer(name);
@@ -268,6 +413,9 @@ export default {
         case 'Dead':
           cleanName = 'Dad';
           break;
+        case 'Ison':
+          cleanName = 'Addison';
+          break;
         default:
       }
 
@@ -281,7 +429,20 @@ export default {
     },
     setCurrentPlayer: function setCurrentPlayer(pix) {
       this.players[pix].isCurrent = true;
-      this.currenmtPlayerIndex = pix;
+      this.currentPlayerIndex = pix;
+
+      this.listenForPlayerCommands();
+    },
+    getCurrentPlayer: function getCurrentPlayer() {
+      return this.players[this.currentPlayerIndex];
+    },
+    resetGame: function resetGame() {
+      this.mode = 'add-players';
+      this.round = 1;
+      this.currentPlayerIndex = 0;
+      this.players = [];
+      this.focusOnNewPlayerAdd();
+      this.listenForNames();
     },
     startGame: function startGame() {
       this.mode = 'playing';
@@ -289,6 +450,7 @@ export default {
     },
     endGame: function endGame() {
       this.mode = 'end';
+      this.listenForEndOfGame();
     },
     getPlayersByScore: function getPlayersByScore() {
       return this.players.slice().sort((a, b) => b.final - a.final);
@@ -312,15 +474,24 @@ export default {
     },
     getPlacement: (player) => {
       switch (player.currentPosition) {
-        case 1: return '1st';
-        case 2: return '2nd';
-        case 3: return '3rd';
-        case 4: return '4th';
-        case 5: return '5th';
-        case 6: return '6th';
-        case 7: return '7th';
-        case 8: return '8th';
-        default: return '';
+        case 1:
+          return '1st';
+        case 2:
+          return '2nd';
+        case 3:
+          return '3rd';
+        case 4:
+          return '4th';
+        case 5:
+          return '5th';
+        case 6:
+          return '6th';
+        case 7:
+          return '7th';
+        case 8:
+          return '8th';
+        default:
+          return '';
       }
     },
     getScore: (player, category) => {
@@ -397,43 +568,156 @@ export default {
 
       // console.log(score);
     },
+    getPlayerCategories: function getPlayerCategories() {
+      const categories = [];
+      const { scores } = this.getCurrentPlayer();
+
+      this.sections.forEach((section) => {
+        // console.log('section', section.name);
+        if (section.categories) {
+          section.categories.forEach((category) => {
+            categories.push({
+              ...category,
+              hasScore: scores[category.code] !== null,
+              sectionCode: section.code,
+            });
+          });
+        }
+      });
+      // console.log(categories);
+      return categories;
+    },
+    getAvailableScoresForCurrentPlayer: function getAvailableScoresForCurrentPlayer() {
+      let commands = [];
+
+      const categories = this.getPlayerCategories();
+      if (categories) {
+        categories.forEach((category) => {
+          if (category.listenFor && !category.hasScore) {
+            commands = [...commands, ...category.listenFor];
+          }
+        });
+      }
+
+      if (commands) {
+        // console.log(commands.join('|').toLowerCase());
+
+        return commands.join('|').toLowerCase();
+      }
+      return '';
+    },
     listenForNames: function listenForNames() {
-      const commands = {
+      annyang.addCommands({
         'add (player) :name': this.addPlayer,
         'add (players) *name': this.addPlayers,
         'start (the) game': this.startGame,
         'play (the) game': this.startGame,
         'play yahtzee': this.startGame,
-      };
+      });
 
-      annyang.addCommands(commands);
       annyang.start();
     },
-  }, // end of methods
-  mounted() {
-    this.focusOnNewPlayerAdd();
-    // test data
-    // this.addPlayer('Ava');
-    // this.addPlayer('Mya');
-    // this.addPlayer('Addison');
-    // this.addPlayer('Mom');
-    // this.addPlayer('Dad');
-    // // this.players[0].scores['1s'] = 3;
-    // // this.players[1].scores['4oak'] = 29;
-    // // this.players[2].scores['1s'] = 3;
-    // // this.players[3].scores['1s'] = 3;
-    // // this.players[4].scores['1s'] = 3;
-    // this.startGame();
+    listenForPlayerCommands: function listenForPlayerCommands() {
+      annyang.removeCommands();
 
-    this.listenForNames();
+      // build reg exp to listen, based on what is available
+      const expression = `^enter score for (${this.getAvailableScoresForCurrentPlayer()})$`;
+      // console.log(expression);
 
-    EventBus.$on('modal-value-set', (score) => {
-      // console.log('modal-value-set: score', score);
-      this.updateScore(score);
-      // playerIndex: this.playerIndex,
-      // categoryCode: this.category.code,
-      // value: selectedOption,
-    });
+      annyang.addCommands({
+        // 'enter score for :category': this.voiceCommandOpenScoreModal,
+        'enter score for category': {
+          // regexp: /^enter score for (ones|aces|twos|threes|fours|fives|sixes)$/,
+          regexp: new RegExp(expression, 'i'),
+          callback: this.voiceCommandOpenScoreModal,
+        },
+
+      });
+    },
+    listenForPoints: function listenForPoints(category) {
+      annyang.removeCommands();
+
+      if (category == null) {
+        return;
+      }
+
+      const playerIndex = this.currentPlayerIndex;
+
+      const pointOptions = categoryService.getPointOptions(category);
+      const listenForOptions = (pointOptions) ? pointOptions.join('|') : '';
+
+      // build reg exp to listen, based on what is available
+      const expression = `^(${listenForOptions})$`;
+      // console.log(expression);
+
+      annyang.addCommands({
+        // 'enter score for :category': this.voiceCommandOpenScoreModal,
+        'cancel/back': {
+          // regexp: /^enter score for (ones|aces|twos|threes|fours|fives|sixes)$/,
+          regexp: new RegExp(/^(cancel|back)$/, 'i'),
+          callback() {
+            EventBus.$emit('cancel-score-modal');
+          },
+        },
+        'enter points': {
+          // regexp: /^enter score for (ones|aces|twos|threes|fours|fives|sixes)$/,
+          regexp: new RegExp(expression, 'i'),
+          callback: function setPoints(points) {
+            EventBus.$emit('select-point-option', {
+              category,
+              playerIndex,
+              points,
+            });
+          },
+        },
+        'clear score': function clearScore() {
+          EventBus.$emit('select-point-option', {
+            category,
+            playerIndex,
+            points: null,
+          });
+        },
+      });
+    },
+    listenForEndOfGame: function listenForEndOfGame() {
+      annyang.removeCommands();
+      annyang.addCommands({
+        'play (it) again': this.resetGame,
+        'start (a) new game': this.resetGame,
+        'new game': this.resetGame,
+      });
+    },
+    voiceCommandOpenScoreModal: function voiceCommandOpenScoreModal(said) {
+      // console.log('emit event for', said);
+      const category = this.getCategoryByVoice(said);
+      if (category != null) {
+        EventBus.$emit('click-score-input', {
+          playerIndex: this.currentPlayerIndex,
+          player: this.getCurrentPlayer(),
+          category,
+          value: null,
+          type: 'category',
+        });
+      }
+      // console.log(category);
+    },
+    getCategoryByVoice: function getCategoryByVoice(said) {
+      const saidClean = said.toLowerCase().trim();
+      const categories = this.getPlayerCategories();
+      if (categories) {
+        for (let catIndex = 0; catIndex < categories.length; catIndex += 1) {
+          const category = categories[catIndex];
+          if (category.listenFor && !category.hasScore) {
+            for (let listenIndex = 0; listenIndex < category.listenFor.length; listenIndex += 1) {
+              if (category.listenFor[listenIndex].toLowerCase() === saidClean) {
+                return category;
+              }
+            }
+          }
+        }
+      }
+      return null;
+    },
   },
   ready() {
     window.addEventListener('keypress', function keyUp(event) {
@@ -451,10 +735,10 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style>
-@import url('https://fonts.googleapis.com/css?family=Lexend+Deca&display=swap');
+@import url("https://fonts.googleapis.com/css?family=Lexend+Deca&display=swap");
 
 * {
-  font-family: 'Lexend Deca';
+  font-family: "Lexend Deca";
   user-select: none;
 }
 
@@ -466,16 +750,16 @@ body {
 }
 
 .add-players-container {
-  color:white;
-  padding:100px;
-  font-size:40px;
+  color: white;
+  padding: 40px;
+  font-size: 40px;
   max-width: 400px;
   margin: 15px auto;
 }
 
 .add-players-container input {
-  font-size:40px;
-  width:100%;
+  font-size: 40px;
+  width: 100%;
 }
 
 .add-players-container button {
@@ -488,7 +772,6 @@ body {
   margin-left: 10px;
 }
 
-
 .add-players-container ol {
   text-align: left;
 }
@@ -500,7 +783,7 @@ body {
 
 h3 {
   margin: 2px 4px;
-  font-size:26px;
+  font-size: 26px;
 }
 
 .player h3 {
@@ -510,49 +793,48 @@ h3 {
 
 .board {
   display: flex; /* or inline-flex */
-  border-right:solid 1px black;
-  height:100%;
+  border-right: solid 1px black;
+  height: 100%;
 }
 
 .board .col {
-  flex-grow:0; /* default 0 */
-  background-color:#ccc;
-  width:280px;
-  font-size:20px;
-  border:solid 1px black;
+  flex-grow: 0; /* default 0 */
+  background-color: #ccc;
+  width: 280px;
+  font-size: 20px;
+  border: solid 1px black;
   border-right: 0;
 }
 
 .board .col.player {
-  width:210px;
+  width: 160px;
 }
 
 .board .cell {
-  height:44.5px;
+  height: 44.5px;
   border-bottom: solid 1px black;
   display: grid;
   vertical-align: middle;
-  padding:2px;
+  padding: 2px;
 }
 
 .board .header.cell {
-  height:auto;
+  height: auto;
 }
 
 .how {
-  font-size:.8em;
+  font-size: 0.8em;
   font-style: italic;
   font-weight: normal;
   margin-top: -5px; /* janky */
 }
 
 .col.label {
-  flex-basis:auto;
+  flex-basis: auto;
 }
 
-
 .label {
-  text-align:left;
+  text-align: left;
 }
 
 .player .category,
@@ -568,7 +850,7 @@ h3 {
 .cell.total {
   background-color: #aaa;
   font-size: 22px;
-  font-weight:bold;
+  font-weight: bold;
 }
 
 .cell.upper-section {
@@ -583,7 +865,7 @@ h3 {
   background-color: limegreen;
   font-size: 34px;
   text-transform: uppercase;
-  font-weight:bold;
+  font-weight: bold;
 }
 
 .current.col {
@@ -591,7 +873,7 @@ h3 {
 }
 
 .current .cell.upper-section {
-  background-color: #B4E0FC;
+  background-color: #b4e0fc;
 }
 
 .current .cell.lower-section {
@@ -619,10 +901,10 @@ h3 {
 
 .scorebaord {
   position: absolute;
-  top:0;
+  top: 0;
   right: 0;
-  width:400px;
-  font-size:2em;
+  width: 400px;
+  font-size: 2em;
   background: #eee;
   padding: 10px;
 }
@@ -632,12 +914,12 @@ h3 {
 }
 
 .scorebaord .roundsLeft {
-  font-size: .8em;
+  font-size: 0.8em;
   font-style: italic;
 }
 
 .scorebaord .leaderboard {
-  margin-top:60px;
+  margin-top: 60px;
   text-align: left;
   border-bottom: solid 1px black;
   width: 360px;
@@ -664,12 +946,12 @@ h3 {
 }
 
 .leaderboard .name {
-  flex-grow:1;
+  flex-grow: 1;
 }
 
 .leaderboard .score {
-  width:100px;
-  text-align:right;
+  width: 100px;
+  text-align: right;
 }
 
 .turn-info {
@@ -677,24 +959,24 @@ h3 {
 }
 
 .turn-info h4 {
-  margin:0;
+  margin: 0;
 }
 
 .turn-info .category {
-  font-size:.9em;
+  font-size: 0.9em;
   font-weight: bold;
 }
 
 .turn-info .used {
   text-decoration: line-through;
-  font-size: .6em;
+  font-size: 0.6em;
   font-weight: normal;
 }
 
 .winner {
-    margin-top:20px;
-    text-transform: uppercase;
-    background: lightgreen;
-    padding: 2px 0;
+  margin-top: 20px;
+  text-transform: uppercase;
+  background: lightgreen;
+  padding: 2px 0;
 }
 </style>

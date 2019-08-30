@@ -1,7 +1,7 @@
 <template>
-    <div class="col player">
-      <h3>{{ name }}</h3>
-    </div>
+  <div class="col player">
+    <h3>{{ name }}</h3>
+  </div>
 </template>
 
 <script>

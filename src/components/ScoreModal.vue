@@ -1,16 +1,33 @@
 <template>
-  <div class='modal-input'>
-    <h4>Please enter the <strong>{{category.name}}</strong><br/>score for <strong>{{player.name}}</strong></h4>
+  <div class="modal-input">
+    <h4>
+      Please enter the
+      <strong>{{ category.name }}</strong>
+      <br>score for
+      <strong>{{ player.name }}</strong>
+    </h4>
 
     <div class="options">
-      <div :class="{full: option === 0 || options.length <= 2, upper: options.length == 5}" v-for="option in options" v-bind:key="option" @click="handleClick(option)">
-        <div class="option">{{option}}</div>
+      <div
+        v-for="option in options"
+        :key="option"
+        :class="{full: option === 0 || options.length <= 2, upper: options.length == 5}"
+        @click="handleClick(option)"
+      >
+        <div class="option">
+          {{ option }}
+        </div>
       </div>
-      <div class="full" v-if="value !== null" @click="handleClick(null)">
-        <div class="option">Clear Score ({{value}})</div>
+      <div
+        v-if="value !== null"
+        class="full"
+        @click="handleClick(null)"
+      >
+        <div class="option">
+          Clear Score ({{ value }})
+        </div>
       </div>
     </div>
-
   </div>
 </template>
 
@@ -19,7 +36,40 @@ import { EventBus } from '../event-bus';
 
 export default {
   name: 'ScoreModal',
-  props: ['value', 'options', 'playerIndex', 'player', 'category', 'isOutOfOrderEntry'],
+  props: {
+    value: String,
+    options: Array,
+    playerIndex: Number,
+    player: Object,
+    category: Object,
+    isOutOfOrderEntry: Boolean,
+  },
+  mounted() {
+    EventBus.$on('cancel-score-modal', () => {
+      // the Board.vue is listening too
+      this.$modal.hide('input-modal');
+    });
+
+    EventBus.$on('select-point-option', (info) => {
+      // console.log('in modal', info);
+      if (info.category.code !== this.category.code) {
+        return;
+      }
+      if (info.playerIndex !== this.playerIndex) {
+        return;
+      }
+
+      if (info.points == null) {
+        this.handleClick(null);
+        return;
+      }
+      const selectedOption = parseInt(info.points, 10);
+      // console.log('selectedOption', selectedOption);
+      if (!Number.isNaN(selectedOption)) {
+        this.handleClick(selectedOption);
+      }
+    });
+  },
   methods: {
     handleClick: function handleClick(selectedOption) {
       EventBus.$emit('modal-value-set', {
@@ -37,13 +87,13 @@ export default {
 
 <style scoped>
 .modal-input {
-  background-color:black;
-  color:white;
-  padding:20px 20px;
+  background-color: black;
+  color: white;
+  padding: 20px 20px;
 }
 
 h4 {
-  text-align:center;
+  text-align: center;
   margin-top: 0;
   margin-bottom: 10px;
   font-weight: normal;
@@ -60,7 +110,7 @@ div {
 .options {
   display: flex;
   flex-wrap: wrap;
-  width:740px;
+  width: 740px;
   justify-content: center;
   /* justify-content: space-between; */
 }
@@ -72,38 +122,50 @@ div {
   flex: 1;
   min-width: 70px;
 
-  background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #2dabf9), color-stop(1, #0688fa));
-  background:-moz-linear-gradient(top, #2dabf9 5%, #0688fa 100%);
-  background:-webkit-linear-gradient(top, #2dabf9 5%, #0688fa 100%);
-  background:-o-linear-gradient(top, #2dabf9 5%, #0688fa 100%);
-  background:-ms-linear-gradient(top, #2dabf9 5%, #0688fa 100%);
-  background:linear-gradient(to bottom, #2dabf9 5%, #0688fa 100%);
-  filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#2dabf9', endColorstr='#0688fa',GradientType=0);
-  background-color:#2dabf9;
-  -moz-border-radius:14px;
-  -webkit-border-radius:14px;
-  border-radius:14px;
-  border:1px solid #0b0e07;
-  display:inline-block;
-  cursor:pointer;
-  color:#ffffff;
-  padding:18px 30px;
-  text-decoration:none;
-  text-shadow:0px 1px 8px #263666;
+  background: -webkit-gradient(
+    linear,
+    left top,
+    left bottom,
+    color-stop(0.05, #2dabf9),
+    color-stop(1, #0688fa)
+  );
+  background: -moz-linear-gradient(top, #2dabf9 5%, #0688fa 100%);
+  background: -webkit-linear-gradient(top, #2dabf9 5%, #0688fa 100%);
+  background: -o-linear-gradient(top, #2dabf9 5%, #0688fa 100%);
+  background: -ms-linear-gradient(top, #2dabf9 5%, #0688fa 100%);
+  background: linear-gradient(to bottom, #2dabf9 5%, #0688fa 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#2dabf9', endColorstr='#0688fa',GradientType=0);
+  background-color: #2dabf9;
+  -moz-border-radius: 14px;
+  -webkit-border-radius: 14px;
+  border-radius: 14px;
+  border: 1px solid #0b0e07;
+  display: inline-block;
+  cursor: pointer;
+  color: #ffffff;
+  padding: 18px 30px;
+  text-decoration: none;
+  text-shadow: 0px 1px 8px #263666;
 }
 .option:hover {
-  background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #ffd324), color-stop(1, #ffec64));
-  background:-moz-linear-gradient(top, #ffd324 5%, #ffec64 100%);
-  background:-webkit-linear-gradient(top, #ffd324 5%, #ffec64 100%);
-  background:-o-linear-gradient(top, #ffd324 5%, #ffec64 100%);
-  background:-ms-linear-gradient(top, #ffd324 5%, #ffec64 100%);
-  background:linear-gradient(to bottom, #ffd324 5%, #ffec64 100%);
-  filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffd324', endColorstr='#ffec64',GradientType=0);
-  background-color:#ffd324;
+  background: -webkit-gradient(
+    linear,
+    left top,
+    left bottom,
+    color-stop(0.05, #ffd324),
+    color-stop(1, #ffec64)
+  );
+  background: -moz-linear-gradient(top, #ffd324 5%, #ffec64 100%);
+  background: -webkit-linear-gradient(top, #ffd324 5%, #ffec64 100%);
+  background: -o-linear-gradient(top, #ffd324 5%, #ffec64 100%);
+  background: -ms-linear-gradient(top, #ffd324 5%, #ffec64 100%);
+  background: linear-gradient(to bottom, #ffd324 5%, #ffec64 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffd324', endColorstr='#ffec64',GradientType=0);
+  background-color: #ffd324;
 }
 .option:active {
-  position:relative;
-  top:1px;
+  position: relative;
+  top: 1px;
 }
 
 .full {
@@ -114,5 +176,4 @@ div {
 .upper .option {
   min-width: 107px;
 }
-
 </style>
