@@ -112,6 +112,7 @@
     - Start game
  - voice control
 */
+import annyang from 'annyang';
 import { EventBus } from '../event-bus';
 import ScoreInput from './ScoreInput.vue';
 
@@ -206,7 +207,7 @@ export default {
     },
     handleAddPlayer: function handleAddPlayer() {
       if (this.newPlayerName !== '') {
-        this.addPlayer(utils.toTitleCase(this.newPlayerName));
+        this.addPlayer(this.newPlayerName);
         this.focusOnNewPlayerAdd();
       } else {
         this.startGame();
@@ -219,6 +220,17 @@ export default {
     updateZoom: function updateZoom(amount) {
       this.zoomScale += amount;
       document.getElementsByTagName('body')[0].style.transform = `'scale('${this.zoomScale})'`;
+    },
+    addPlayers: function addPlayers(names) {
+      // console.log(names);
+      // console.log(names.split(' '));
+      // names = space seperated
+      names.split(' ').forEach((name) => {
+        if (name === 'and') {
+          return;
+        }
+        this.addPlayer(name);
+      });
     },
     addPlayer: function addPlayer(name) {
       // eslint-disable-next-line
@@ -243,8 +255,24 @@ export default {
         }
       });
 
+      let cleanName = utils.toTitleCase(name);
+      // special cases for the schmidt familly`
+      switch (cleanName) {
+        case 'Bunny':
+        case 'Bonnie':
+          cleanName = 'Bonny';
+          break;
+        case 'Maya':
+          cleanName = 'Mya';
+          break;
+        case 'Dead':
+          cleanName = 'Dad';
+          break;
+        default:
+      }
+
       this.players.push({
-        name,
+        name: cleanName,
         isCurrent: false,
         currentPosition: null,
         scores,
@@ -369,6 +397,18 @@ export default {
 
       // console.log(score);
     },
+    listenForNames: function listenForNames() {
+      const commands = {
+        'add (player) :name': this.addPlayer,
+        'add (players) *name': this.addPlayers,
+        'start (the) game': this.startGame,
+        'play (the) game': this.startGame,
+        'play yahtzee': this.startGame,
+      };
+
+      annyang.addCommands(commands);
+      annyang.start();
+    },
   }, // end of methods
   mounted() {
     this.focusOnNewPlayerAdd();
@@ -384,6 +424,8 @@ export default {
     // // this.players[3].scores['1s'] = 3;
     // // this.players[4].scores['1s'] = 3;
     // this.startGame();
+
+    this.listenForNames();
 
     EventBus.$on('modal-value-set', (score) => {
       // console.log('modal-value-set: score', score);
