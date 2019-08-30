@@ -1,40 +1,53 @@
 <template>
   <div :style="{ transform: 'scale('+ zoomScale+')'}">
-    <div class="board" v-for="section in sections" v-bind:key="section.name">
-      <div class="col label">
-        <div v-if="section.showHeader" :class="section.code" class="header cell">
-          <h3>{{section.name}}</h3>
-        </div>
+    <div class="add-players-container" v-if="this.mode == 'add-players'">
+      <input type="text" @keyup.enter="handleAddPlayer" ref="newPlayer" v-model="newPlayerName" maxlength="8" />
+      <button href="#" @click="handleAddPlayer">Add Players</button>
+      <button v-if="players.length > 0" href="#" @click="startGame">Start Game</button>
 
-        <div :class="section.code" class="cell category" v-for="category in section.categories" v-bind:key="category.code">
-          <strong>{{category.name}}</strong>
-          <div class="how">
-            {{category.how}}
+      <ol>
+      <li class="player" @click="handleRemovePlayer(pix)" v-bind:name="player.name" v-for="(player, pix) in players" v-bind:key="player.name">
+        {{ player.name }}
+      </li>
+      </ol>
+    </div>
+    <div v-if="this.mode != 'add-players'">
+      <div class="board" v-for="section in sections" v-bind:key="section.name">
+        <div class="col label">
+          <div v-if="section.showHeader" :class="section.code" class="header cell">
+            <h3>{{section.name}}</h3>
+          </div>
+
+          <div :class="section.code" class="cell category" v-for="category in section.categories" v-bind:key="category.code">
+            <strong>{{category.name}}</strong>
+            <div class="how">
+              {{category.how}}
+            </div>
+          </div>
+
+          <div :class="section.code" class="cell total" v-for="total in section.totals" v-bind:key="total.code">
+            {{total.name}}
+            <div class="how" v-if="total.how">
+              {{total.how}}
+            </div>
           </div>
         </div>
 
-        <div :class="section.code" class="cell total" v-for="total in section.totals" v-bind:key="total.code">
-          {{total.name}}
-          <div class="how" v-if="total.how">
-            {{total.how}}
+        <div :class="[(player.isCurrent) ? 'current' : '']" class="col player" v-bind:name="player.name" v-for="(player, pix) in players" v-bind:key="player.name">
+          <div :class="section.code" v-if="section.showHeader" class="header cell">
+            <h3>{{ player.name }}</h3>
+          </div>
+
+          <div class="cell category" v-for="category in section.categories" v-bind:key="category.code">
+            <ScoreInput :category="category" type="category" :playerIndex="pix" :player="player" :value="getScore(player, category)" />
+          </div>
+
+          <div :class="section.code" class="cell total" v-for="total in section.totals" v-bind:key="total.code">
+            <ScoreInput :category="total"  type="total" :value="player.scores[total.code] || 0" />
           </div>
         </div>
-      </div>
-
-      <div :class="['placement-'+ player.currentPosition, (player.isCurrent) ? 'current' : '']" class="col player" v-bind:name="player.name" v-for="(player, pix) in players" v-bind:key="player.name">
-        <div :class="section.code" v-if="section.showHeader" class="header cell">
-          <h3 style="float:right">{{ player.name }}<span class="placement" v-html="getPlacement(player)"></span></h3>
-        </div>
-
-        <div class="cell category" v-for="category in section.categories" v-bind:key="category.code">
-          <ScoreInput :category="category" type="category" :playerIndex="pix" :player="player" :value="getScore(player, category)" />
-        </div>
-
-        <div :class="section.code" class="cell total" v-for="total in section.totals" v-bind:key="total.code">
-          <ScoreInput :category="total"  type="total" :value="player.scores[total.code] || 0" />
-        </div>
-      </div>
-    </div> <!-- end board -->
+      </div> <!-- end board -->
+    </div>
 
     <div v-if="this.mode != 'add-players'" class="scorebaord">
       <div v-if="this.mode == 'playing'">
@@ -79,7 +92,7 @@
 
 <script>
 /*
- - git repo
+ x git repo
  x Players fixed-with col
  x have leader board on far right (sam is current and placent)
   x have current info "Addison is up"
@@ -90,11 +103,33 @@
     x then we know not to select "next" player
  - center the while thing
  - add v-if transitions
- - make the score input
- - smart sizing, use the whole screen (height and width) TOUGH
+ x make the score input
+ - add the trophy/medals to the leader board (new function that returns image path (or v-html and the whole img tag))
+ - smart sizing, use the whole screen (height and width) TOUGH (on resize, just mess with zoom/scale?)
+ - add players
+    - (remove players)
+    - reorder players (v3), for now, you have to remove and ad in the right order
+    - Start game
+ - voice control
 */
 import { EventBus } from '../event-bus';
 import ScoreInput from './ScoreInput.vue';
+
+const utils = {
+  // eslint-disable-next-line
+  toTitleCase: (str) => {
+    // eslint-disable-next-line
+    return str.replace(
+      /\w\S*/g,
+      // eslint-disable-next-line
+      function(txt) {
+        // eslint-disable-next-line
+        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+      },
+    );
+  },
+};
+
 
 export default {
   name: 'Board',
@@ -105,6 +140,7 @@ export default {
     {
       zoomScale: 1,
       mode: 'add-players',
+      newPlayerName: '',
       round: 1,
       roundMax: 13,
       currenmtPlayerIndex: 0,
@@ -164,6 +200,22 @@ export default {
     }
   ), // end data
   methods: {
+    focusOnNewPlayerAdd: function focusOnNewPlayerAdd() {
+      this.newPlayerName = '';
+      this.$refs.newPlayer.focus();
+    },
+    handleAddPlayer: function handleAddPlayer() {
+      if (this.newPlayerName !== '') {
+        this.addPlayer(utils.toTitleCase(this.newPlayerName));
+        this.focusOnNewPlayerAdd();
+      } else {
+        this.startGame();
+      }
+    },
+    handleRemovePlayer: function handleRemovePlayer(pix) {
+      this.players.splice(pix, 1);
+      this.focusOnNewPlayerAdd();
+    },
     updateZoom: function updateZoom(amount) {
       this.zoomScale += amount;
       document.getElementsByTagName('body')[0].style.transform = `'scale('${this.zoomScale})'`;
@@ -319,18 +371,19 @@ export default {
     },
   }, // end of methods
   mounted() {
+    this.focusOnNewPlayerAdd();
     // test data
-    this.addPlayer('Ava');
-    this.addPlayer('Mya');
-    this.addPlayer('Addison');
-    this.addPlayer('Mom');
-    this.addPlayer('Dad');
-    // this.players[0].scores['1s'] = 3;
-    // this.players[1].scores['4oak'] = 29;
-    // this.players[2].scores['1s'] = 3;
-    // this.players[3].scores['1s'] = 3;
-    // this.players[4].scores['1s'] = 3;
-    this.startGame();
+    // this.addPlayer('Ava');
+    // this.addPlayer('Mya');
+    // this.addPlayer('Addison');
+    // this.addPlayer('Mom');
+    // this.addPlayer('Dad');
+    // // this.players[0].scores['1s'] = 3;
+    // // this.players[1].scores['4oak'] = 29;
+    // // this.players[2].scores['1s'] = 3;
+    // // this.players[3].scores['1s'] = 3;
+    // // this.players[4].scores['1s'] = 3;
+    // this.startGame();
 
     EventBus.$on('modal-value-set', (score) => {
       // console.log('modal-value-set: score', score);
@@ -368,6 +421,39 @@ body {
   padding: 0;
   overflow: auto;
   background-color: #333;
+}
+
+.add-players-container {
+  color:white;
+  padding:100px;
+  font-size:40px;
+  max-width: 400px;
+  margin: 15px auto;
+}
+
+.add-players-container input {
+  font-size:40px;
+  width:100%;
+}
+
+.add-players-container button {
+  font-size: 23px;
+  margin: 10px 0;
+  padding: 10px 20px;
+}
+
+.add-players-container button:last-of-type {
+  margin-left: 10px;
+}
+
+
+.add-players-container ol {
+  text-align: left;
+}
+
+.add-players-container .player:hover {
+  color: red;
+  cursor: not-allowed;
 }
 
 h3 {
@@ -474,16 +560,7 @@ h3 {
   background-color: lightgreen;
 }
 
-.placement {
-  float: right;
-  display:inline-block;
-  color: #000;
-  font-size: .8em;
-  margin-right:14px;
-  margin-top:6  px;
-}
-
-.col.player.placement-1 .header.cell {
+/* .col.player.placement-1 .header.cell {
   background-image: url('../assets/placement-1.png');
 }
 .col.player.placement-2 .header.cell {
@@ -496,7 +573,7 @@ h3 {
 .col.player .header.cell {
   background-repeat: no-repeat;
   background-position-x: 95%;
-}
+} */
 
 .scorebaord {
   position: absolute;
