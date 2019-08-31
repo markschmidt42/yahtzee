@@ -1,7 +1,8 @@
 <template>
   <div
     v-if="loaded"
-    :class="[settings.category.type, { active: hover }, { needs: (value == null) }, { used: (value != null) }]"
+    v-tooltip.bottom="(value === null && !isOutOfOrderEntry()) ? `Say &quot;Enter score for ${settings.category.name}&quot;` : ''"
+    :class="[settings.class, settings.category.type, { active: hover }, { needs: (value == null) }, { used: (value != null) }]"
     class="input"
     type="text"
     code:="this.settings.category.code"
@@ -44,6 +45,7 @@ export default {
       loaded: false,
       hover: false,
       settings: {
+        class: null,
         playerIndex: null,
         player: null,
         category: null,
@@ -140,6 +142,10 @@ export default {
       // if (this.value != null) {
       //   newValue = null; // undo it
       // }
+
+      if (newValue !== null) {
+        this.settings.class = 'saved';
+      }
       this.$emit('update-score', {
         playerIndex: this.settings.playerIndex,
         categoryCode: this.settings.category.code,
@@ -187,6 +193,18 @@ export default {
     .input.total {
       background: unset;
       cursor: default;
+    }
+
+    .category .used {
+      animation: light-up 1s ease-in;
+    }
+    @keyframes light-up {
+      from {
+        background-color: lightgreen;
+      }
+      to {
+        background-color: #aaa;
+      }
     }
 
 </style>
