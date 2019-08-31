@@ -184,6 +184,6 @@ div {
     margin: 0 4px;
     margin-top: 14px;
     width: 48px;
-    background-color:#ddd;
+    background-color:white;
 }
 </style>

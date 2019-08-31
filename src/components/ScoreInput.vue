@@ -199,7 +199,7 @@ export default {
       from {
         background-color: green;
         color:white;
-        transform: scale(3);
+        transform: scale(5);
       }
       to {
         transform: scale(1);
