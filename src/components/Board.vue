@@ -576,6 +576,8 @@ export default {
       if (!score.isOutOfOrderEntry && score.value != null) {
         // next player
         this.nextPlayer(pix);
+      } else {
+        this.listenForPlayerCommands();
       }
 
       // console.log(score);
