@@ -23,7 +23,7 @@ export default {
     speech.init({
       volume: 1,
       voice: 'Google UK English Male',
-    }).then((data) => {
+    }).then(() => {
       // The "data" object contains the list of available voices and the voice synthesis params
       // console.log('Speech is ready, voices are available', data);
       speech.speak({
