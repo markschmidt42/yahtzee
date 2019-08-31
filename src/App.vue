@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <Board/>
+    <Board />
   </div>
 </template>
 
@@ -9,7 +9,7 @@
 import Board from './components/Board.vue';
 
 export default {
-  name: 'app',
+  name: 'App',
   components: {
     Board,
   },

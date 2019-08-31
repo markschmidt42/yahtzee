@@ -8,7 +8,7 @@
     }
   ],
   "settings": {
-	"prettier.eslintIntegration": true,
+    "prettier.eslintIntegration": true,
     "eslint.validate": [
       {
         "language": "vue",
@@ -17,9 +17,9 @@
       {
         "language": "javascript",
         "autoFix": true
-      },
+      }
     ],
     "eslint.autoFixOnSave": true,
-    "editor.formatOnSave": false,
+    "editor.formatOnSave": false
   }
 }
