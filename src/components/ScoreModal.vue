@@ -37,7 +37,7 @@ import { EventBus } from '../event-bus';
 export default {
   name: 'ScoreModal',
   props: {
-    value: String,
+    value: Number,
     options: Array,
     playerIndex: Number,
     player: Object,

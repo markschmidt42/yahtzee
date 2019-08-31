@@ -18,6 +18,7 @@
 // services
 import { EventBus } from '../event-bus';
 import categoryService from '../services/category.service';
+import soundService from '../services/sound.service';
 
 // components
 import ScoreModal from './ScoreModal.vue';
@@ -88,7 +89,7 @@ export default {
   methods: {
     isOutOfOrderEntry: function isOutOfOrderEntry() { return !this.settings.player.isCurrent || this.settings.value != null; },
     handleOnClick: function handleOnClick() {
-      if (this.settings.type === 'total' || this.isOutOfOrderEntry()) {
+      if (this.settings.type === 'total' || this.isOutOfOrderEntry() || this.value !== null) {
         // retrun/cancel event
         return false;
       }
@@ -97,7 +98,7 @@ export default {
       return true;
     },
     handleOnDblClick: function handleOnDblClick() {
-      if (this.settings.type === 'total' || !this.isOutOfOrderEntry()) {
+      if (this.settings.type === 'total' || (!this.isOutOfOrderEntry() && this.value === null)) {
         // retrun/cancel event
         return false;
       }
@@ -106,6 +107,8 @@ export default {
       return true;
     },
     openModal: function openModal() {
+      soundService.playSound('quick-pop');
+
       EventBus.$emit('set-listen-mode-to-points', {
         category: this.settings.category,
       });

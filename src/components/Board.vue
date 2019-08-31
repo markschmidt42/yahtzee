@@ -3,13 +3,15 @@
     <div v-if="mode == 'add-players'" class="add-players-container">
       <h2>Add Players:</h2>
       <input ref="newPlayer" v-model="newPlayerName" type="text" maxlength="8" @keyup.enter="handleAddPlayer">
-      <button href="#" @click="handleAddPlayer">Add Players</button>
-      <button v-if="players.length > 0" href="#" @click="startGame">Start Game</button>
+      <button href="#" @click="handleAddPlayer">Add Player</button>
+      <button v-if="players.length > 0" href="#" @click="startGame">Play Yahtzee</button>
 
       <ol>
-        <li v-for="(player, pix) in players" :key="player.name" class="player" :name="player.name" @click="handleRemovePlayer(pix)">
-          {{ player.name }}
-        </li>
+        <transition-group name="player-add-remove">
+          <li v-for="(player, pix) in players" :key="player.name" class="player" :name="player.name" @click="handleRemovePlayer(pix)">
+            {{ player.name }}
+          </li>
+        </transition-group>
       </ol>
 
       <div class="voice-help">
@@ -19,96 +21,104 @@
           <li>"Add player Jane"</li>
           <li>"Add Jane, John and Bill"</li>
           <li>"Add player Jane, John and Bill"</li>
+          <li v-if="players.length > 0">"Remove last player"</li>
           <li v-if="players.length > 0">"Start/Play (the) game"</li>
           <li v-if="players.length > 0">"Play Yahtzee"</li>
         </ul>
       </div>
     </div>
-    <div v-if="mode != 'add-players'">
-      <div v-for="section in sections" :key="section.name" class="board">
-        <div class="col label">
-          <div v-if="section.showHeader" :class="section.code" class="header cell">
-            <h3>{{ section.name }}</h3>
-          </div>
 
-          <div v-for="category in section.categories" :key="category.code" :class="section.code" class="cell category">
-            <strong>{{ category.name }}</strong>
-            <div class="how">
-              {{ category.how }}
+    <transition name="slide-up-fade">
+      <div v-if="mode != 'add-players'">
+        <div v-for="section in sections" :key="section.name" class="board">
+          <div class="col label">
+            <div v-if="section.showHeader" :class="section.code" class="header cell">
+              <h3>{{ section.name }}</h3>
+            </div>
+
+            <div v-for="category in section.categories" :key="category.code" :class="section.code" class="cell category">
+              <strong>{{ category.name }}</strong>
+              <div class="how">
+                {{ category.how }}
+              </div>
+            </div>
+
+            <div v-for="total in section.totals" :key="total.code" :class="section.code" class="cell total">
+              {{ total.name }}
+              <div v-if="total.how" class="how">
+                {{ total.how }}
+              </div>
             </div>
           </div>
 
-          <div v-for="total in section.totals" :key="total.code" :class="section.code" class="cell total">
-            {{ total.name }}
-            <div v-if="total.how" class="how">
-              {{ total.how }}
+          <div v-for="(player, pix) in players" :key="player.name" :class="[(player.isCurrent) ? 'current' : '']" class="col player" :name="player.name">
+            <div v-if="section.showHeader" :class="section.code" class="header cell">
+              <h3>{{ player.name.substr(0, 7) }}</h3>
+            </div>
+
+            <div v-for="category in section.categories" :key="category.code" class="cell category">
+              <ScoreInput :category="category" type="category" :player-index="pix" :player="player" :value="getScore(player, category)" />
+            </div>
+
+            <div v-for="total in section.totals" :key="total.code" :class="section.code" class="cell total">
+              <ScoreInput :category="total" type="total" :value="player.scores[total.code] || 0" />
+            </div>
+          </div>
+        </div>
+        <!-- end board -->
+      </div>
+    </transition>
+
+    <transition name="slide-left-fade">
+      <div
+        v-if="mode != 'add-players'"
+        class="scorebaord"
+      >
+        <div v-if="mode == 'playing'">
+          <div class="rounds">Round <strong>{{ round }}</strong> of {{ roundMax }}</div>
+          <div class="roundsLeft">{{ 1+roundMax-round }} play{{ 1+roundMax-round != 1 ? 's' : '' }} left</div>
+        </div>
+        <transition name="bounce">
+          <div v-if="mode === 'end'">
+            <div class="rounds">
+              GAME OVER
+            </div>
+            <div class="winner">
+              <h4>{{ getPlayersByScore()[0].name }}<br>IS THE WINNER</h4>
+            </div>
+          </div>
+        </transition>
+
+        <div class="leaderboard">
+          <h4>Yahtzee Leaderboard</h4>
+          <div
+            v-for="(player) in getPlayersByScore()"
+            :key="player.name"
+            :class="['placement-'+ player.currentPosition]"
+            :name="player.name"
+          >
+            <div class="item">
+              <div class="placement" v-html="getPlacement(player)" />
+              <div class="name">
+                {{ player.name }}
+              </div>
+              <div class="score">
+                {{ player.final }}
+              </div>
             </div>
           </div>
         </div>
 
-        <div v-for="(player, pix) in players" :key="player.name" :class="[(player.isCurrent) ? 'current' : '']" class="col player" :name="player.name">
-          <div v-if="section.showHeader" :class="section.code" class="header cell">
-            <h3>{{ player.name.substr(0, 7) }}</h3>
-          </div>
-
-          <div v-for="category in section.categories" :key="category.code" class="cell category">
-            <ScoreInput :category="category" type="category" :player-index="pix" :player="player" :value="getScore(player, category)" />
-          </div>
-
-          <div v-for="total in section.totals" :key="total.code" :class="section.code" class="cell total">
-            <ScoreInput :category="total" type="total" :value="player.scores[total.code] || 0" />
-          </div>
-        </div>
-      </div>
-      <!-- end board -->
-    </div>
-
-    <div
-      v-if="mode != 'add-players'"
-      class="scorebaord"
-    >
-      <div v-if="mode == 'playing'">
-        <div class="rounds">Round <strong>{{ round }}</strong> of {{ roundMax }}</div>
-        <div class="roundsLeft">{{ 1+roundMax-round }} play{{ 1+roundMax-round != 1 ? 's' : '' }} left</div>
-      </div>
-      <div v-else>
-        <div class="rounds">
-          GAME OVER
-        </div>
-        <div class="winner">
-          <h4>{{ getPlayersByScore()[0].name }}<br>IS THE WINNER</h4>
-        </div>
-      </div>
-
-      <div class="leaderboard">
-        <h4>Yahtzee Leaderboard</h4>
-        <div
-          v-for="(player) in getPlayersByScore()"
-          :key="player.name"
-          :class="['placement-'+ player.currentPosition]"
-          :name="player.name"
-        >
-          <div class="item">
-            <div class="placement" v-html="getPlacement(player)" />
-            <div class="name">
-              {{ player.name }}
-            </div>
-            <div class="score">
-              {{ player.final }}
+        <div v-if="mode !== 'end'" class="turn-info">
+          <h4>{{ players[currentPlayerIndex].name }}'s Turn</h4>
+          <div v-for="category in getPlayerCategories()" :key="category.code">
+            <div :class="[category.sectionCode, { used: category.hasScore }]" class="cell category">
+              {{ category.name }}
             </div>
           </div>
         </div>
       </div>
-
-      <div v-if="mode !== 'end'" class="turn-info">
-        <h4>{{ players[currentPlayerIndex].name }}'s Turn</h4>
-        <div v-for="category in getPlayerCategories()" :key="category.code">
-          <div :class="[category.sectionCode, { used: category.hasScore }]" class="cell category">
-            {{ category.name }}
-          </div>
-        </div>
-      </div>
-    </div>
+    </transition>
 
     <!-- one modal -->
     <modal name="hello-world">
@@ -138,6 +148,9 @@
     - reorder players (v3), for now, you have to remove and ad in the right order
     x Start game
  x voice control
+- add sounds
+- add visual/audio feedback on last score entered (light up green fade out, make sound)
+- don't allow adding of the same player
 */
 
 // third-party
@@ -146,6 +159,7 @@ import annyang from 'annyang';
 // services
 import { EventBus } from '../event-bus';
 import categoryService from '../services/category.service';
+import soundService from '../services/sound.service';
 
 // components
 import ScoreInput from './ScoreInput.vue';
@@ -336,6 +350,11 @@ export default {
     this.resetGame();
 
     EventBus.$on('modal-value-set', (score) => {
+      if (score.value === 0) {
+        soundService.playSound('wah-wah');
+      } else {
+        soundService.playSound('confirm-score');
+      }
       // console.log('modal-value-set: score', score);
       this.updateScore(score);
       // playerIndex: this.playerIndex,
@@ -369,7 +388,20 @@ export default {
       }
     },
     handleRemovePlayer: function handleRemovePlayer(pix) {
-      this.players.splice(pix, 1);
+      this.removePlayer(pix);
+    },
+    removePlayer: function removePlayer(pix) {
+      if (!this.players.length) {
+        return;
+      }
+
+      let playerIndexToRemove = pix;
+      if (playerIndexToRemove === undefined) {
+        // remove the last one
+        playerIndexToRemove = this.players.length - 1;
+      }
+      soundService.playSound('explode');
+      this.players.splice(playerIndexToRemove, 1);
       this.focusOnNewPlayerAdd();
     },
     updateZoom: function updateZoom(amount) {
@@ -431,6 +463,13 @@ export default {
         default:
       }
 
+      // annyang.pause();
+      // soundService.say(cleanName);
+      // setTimeout(() => {
+      //   annyang.resume();
+      // }, 2000);
+      soundService.playSound('add-player');
+
       this.players.push({
         name: cleanName,
         isCurrent: false,
@@ -448,6 +487,9 @@ export default {
     getCurrentPlayer: function getCurrentPlayer() {
       return this.players[this.currentPlayerIndex];
     },
+    invalidInput: function invalidInput() {
+      soundService.playSound('invalid');
+    },
     resetGame: function resetGame() {
       this.mode = 'add-players';
       this.round = 1;
@@ -457,11 +499,28 @@ export default {
       this.listenForNames();
     },
     startGame: function startGame() {
+      if (!this.players.length) {
+        this.invalidInput();
+        return;
+      }
+      soundService.playSound('dice-roll');
+      soundService.playSound('slide-in');
       this.mode = 'playing';
       this.setCurrentPlayer(0);
     },
     endGame: function endGame() {
       this.mode = 'end';
+      // janky settimeout... should use async/await
+      soundService.playSound('game-over-strings');
+      setTimeout(() => {
+        soundService.playSound('and-the-winner-is');
+        setTimeout(() => {
+          soundService.say(this.getPlayersByScore()[0].name);
+        }, 2000);
+        setTimeout(() => {
+          soundService.playSound('game-over-winner');
+        }, 4000);
+      }, 2000);
       this.listenForEndOfGame();
     },
     getPlayersByScore: function getPlayersByScore() {
@@ -565,6 +624,8 @@ export default {
     },
     updateScore(score) {
       const pix = score.playerIndex;
+
+      const origScore = this.players[pix].scores[score.categoryCode];
       // set the score
       this.players[pix].scores[score.categoryCode] = score.value;
       this.updatePlayerTotals(pix);
@@ -573,7 +634,7 @@ export default {
         this.updatePositions();
       }
 
-      if (!score.isOutOfOrderEntry && score.value != null) {
+      if (!score.isOutOfOrderEntry && origScore == null && score.value != null) {
         // next player
         this.nextPlayer(pix);
       } else {
@@ -629,6 +690,7 @@ export default {
         'add (the) minions': function addSpecial() { self.addPlayers('Stewart Bob Kevin Mel'); },
         'add (player) :name': this.addPlayer,
         'add (players) *name': this.addPlayers,
+        'remove (the) (last) player': this.removePlayer,
         'start (the) game': this.startGame,
         'play (the) game': this.startGame,
         'play yahtzee': this.startGame,
@@ -745,7 +807,8 @@ export default {
     voiceCommandOpenScoreModal: function voiceCommandOpenScoreModal(said) {
       // console.log('emit event for', said);
       const category = this.getCategoryByVoice(said);
-      if (category != null) {
+      console.log('category found', category);
+      if (category !== null) {
         EventBus.$emit('click-score-input', {
           playerIndex: this.currentPlayerIndex,
           player: this.getCurrentPlayer(),
@@ -753,6 +816,8 @@ export default {
           value: null,
           type: 'category',
         });
+      } else {
+        this.invalidInput();
       }
       // console.log(category);
     },
@@ -800,7 +865,7 @@ export default {
 body {
   margin: 0;
   padding: 0;
-  overflow: auto;
+  overflow: hidden;
   background-color: #333;
 }
 
@@ -1043,5 +1108,66 @@ h3 {
   text-transform: uppercase;
   background: lightgreen;
   padding: 2px 0;
+}
+
+/* Enter and leave animations can use different */
+/* durations and timing functions.              */
+.slide-up-fade-enter-active {
+  transition: all 1.33s ease;
+}
+.slide-up-fade-leave-active {
+  transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+}
+.slide-up-fade-enter, .slide-up-fade-leave-to
+/* .slide-fade-leave-active below version 2.1.8 */ {
+  transform: translateY(1000px);
+  opacity: 0;
+}
+
+.slide-left-fade-enter-active {
+  transition: all 1.33s ease;
+}
+.slide-left-fade-leave-active {
+  transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+}
+.slide-left-fade-enter, .slide-left-fade-leave-to
+/* .slide-fade-leave-active below version 2.1.8 */ {
+  transform: translateX(400px);
+  opacity: 0;
+}
+
+.bounce-enter-active {
+  animation: bounce-in 3.5s;
+}
+.bounce-leave-active {
+  animation: bounce-in 1.5s reverse;
+}
+.player-add-remove-enter-active {
+  animation: bounce-in 0.5s;
+}
+.player-add-remove-leave-active {
+  color:red;
+  animation: letter_explode .9s 0s forwards;
+  transition: 0.7s;
+  opacity:0;
+  transform: scale(4) rotate(720deg);
+  -moz-transform: scale(4) rotate(720deg);
+  -webkit-transform: scale(4) rotate(720deg);
+  -o-transform: scale(4) rotate(720deg);
+}
+@keyframes letter_explode {
+    0% {letter-spacing:0.1em;}
+    100% {letter-spacing:1em;}
+}
+@keyframes bounce-in {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.5);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 </style>
