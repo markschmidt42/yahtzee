@@ -24,9 +24,6 @@ import soundService from '../services/sound.service';
 // components
 import ScoreModal from './ScoreModal.vue';
 
-// move to utility
-// const choice = items => items[Math.floor(Math.random() * items.length)];
-
 export default {
   name: 'ScoreInput',
   components: {
@@ -200,10 +197,12 @@ export default {
     }
     @keyframes light-up {
       from {
-        background-color: lightgreen;
+        background-color: green;
+        color:white;
+        transform: scale(3);
       }
       to {
-        background-color: #aaa;
+        transform: scale(1);
       }
     }
 

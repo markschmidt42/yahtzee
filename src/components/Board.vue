@@ -163,6 +163,7 @@ import soundService from '../services/sound.service';
 
 // components
 import ScoreInput from './ScoreInput.vue';
+import randomService from '../services/random.service';
 
 const utils = {
   // eslint-disable-next-line
@@ -483,7 +484,7 @@ export default {
     setCurrentPlayer: function setCurrentPlayer(pix) {
       this.players[pix].isCurrent = true;
       this.currentPlayerIndex = pix;
-
+      soundService.sayWhosTurnItIs(this.players[pix].name);
       this.listenForPlayerCommands();
     },
     getCurrentPlayer: function getCurrentPlayer() {
@@ -630,11 +631,11 @@ export default {
       if (score.value === null) {
         soundService.playSound('swipe');
       } else if (score.value === 0) {
-        soundService.playSound('wah-wah');
+        soundService.playSound(randomService.choice(['wah-wah', 'ooohh']));
       } else {
         soundService.playSound('confirm-score');
-        if (score.categoryCode === 'yhtz') {
-          soundService.say('Yahtzee! Yahtzee! Yahtzee!');
+        if (score.categoryCode === 'yhtz' || score.categoryCode === 'yb') {
+          soundService.playSound('yeah');
         }
       }
 

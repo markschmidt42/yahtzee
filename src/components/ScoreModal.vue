@@ -9,13 +9,16 @@
 
     <div class="options">
       <div
-        v-for="option in options"
+        v-for="(option, index) in options"
         :key="option"
         :class="{full: option === 0 || options.length <= 2, upper: options.length == 5}"
         @click="handleClick(option)"
       >
         <div class="option">
           {{ option }}
+          <div v-if="category.code != 'yb' && option !== 0 && options.length >= 5 && options.length <= 6" class="dice">
+            <img v-for="dice in options.length-index-1" :key="dice" :src="`assets/dice-${category.code}.png`">
+          </div>
         </div>
       </div>
       <div
@@ -174,6 +177,13 @@ div {
 }
 
 .upper .option {
-  min-width: 107px;
+  min-width: 292px;
+}
+
+.dice img {
+    margin: 0 4px;
+    margin-top: 14px;
+    width: 48px;
+    background-color:#ddd;
 }
 </style>
