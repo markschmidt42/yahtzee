@@ -1,5 +1,6 @@
 <template>
   <div :style="{ transform: 'scale('+ zoomScale+')'}">
+    <div v-if="whatWasHeard" class="what-was-heard" v-html="whatWasHeard" />
     <div v-if="mode == 'add-players'" class="add-players-container">
       <h2>Add Players:</h2>
       <input ref="newPlayer" v-model="newPlayerName" type="text" maxlength="8" @keyup.enter="handleAddPlayer">
@@ -187,6 +188,8 @@ export default {
   },
   data: () => ({
     zoomScale: 1,
+    WhatWasHeardTimeout: null,
+    whatWasHeard: null,
     mode: 'add-players',
     newPlayerName: '',
     round: 1,
@@ -710,6 +713,14 @@ export default {
         'play yahtzee': this.startGame,
       });
 
+      annyang.addCallback('result', (event) => {
+        clearTimeout(this.WhatWasHeardTimeout);
+        this.whatWasHeard = `"${event.join('" <span class="or">or</span> "')}"`;
+        // console.log('event', event);
+        // console.log('event', this.whatWasHeard);
+        this.WhatWasHeardTimeout = setTimeout(() => { this.whatWasHeard = null; }, 5000);
+      });
+
       annyang.debug(true);
       annyang.start();
     },
@@ -821,7 +832,7 @@ export default {
     voiceCommandOpenScoreModal: function voiceCommandOpenScoreModal(said) {
       // console.log('emit event for', said);
       const category = this.getCategoryByVoice(said);
-      console.log('category found', category);
+      // console.log('category found', category);
       if (category !== null) {
         EventBus.$emit('click-score-input', {
           playerIndex: this.currentPlayerIndex,
@@ -1278,5 +1289,24 @@ h3 {
   visibility: visible;
   opacity: 1;
   transition: opacity .15s;
+}
+
+.what-was-heard {
+    font-family: Arial;
+    width: 100%;
+    color: purple;
+    background: white;
+    text-align: center;
+    font-size: 3vh;
+    z-index: 100;
+    padding: 10px;
+    position: fixed;
+    border-radius: 20px;
+    box-sizing: border-box;
+}
+
+.what-was-heard .or {
+  color: #999;
+  font-size: 2vh;
 }
 </style>
