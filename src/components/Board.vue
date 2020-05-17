@@ -701,10 +701,18 @@ export default {
     listenForNames: function listenForNames() {
       const self = this;
       annyang.addCommands({
-        'add (to) (the) schmidt\'s': function addSpecial() { self.addPlayers('Ava Mya Addison Dad Mom'); },
-        'add (to) (the) schmidt family': function addSpecial() { self.addPlayers('Ava Mya Addison Dad Mom'); },
-        'add (the) ninja turtles': function addSpecial() { self.addPlayers('Leonardo Raphael Donatello Michaelangelo'); },
-        'add (the) minions': function addSpecial() { self.addPlayers('Stewart Bob Kevin Mel'); },
+        "add (to) (the) schmidt's": function addSpecial() {
+          self.addPlayers('Ava Mya Addison Dad Mom');
+        },
+        'add (to) (the) schmidt family': function addSpecial() {
+          self.addPlayers('Ava Mya Addison Dad Mom');
+        },
+        'add (the) ninja turtles': function addSpecial() {
+          self.addPlayers('Leonardo Raphael Donatello Michelangelo');
+        },
+        'add (the) minions': function addSpecial() {
+          self.addPlayers('Stewart Bob Kevin Mel');
+        },
         'add (player) :name': this.addPlayer,
         'add (players) *name': this.addPlayers,
         'remove (the) (last) player': this.removePlayer,
@@ -713,7 +721,7 @@ export default {
         'play yahtzee': this.startGame,
       });
 
-      annyang.addCallback('result', (event) => {
+      annyang.addCallback('resultNoMatch', (event) => {
         clearTimeout(this.WhatWasHeardTimeout);
         this.whatWasHeard = `"${event.join('" <span class="or">or</span> "')}"`;
         // console.log('event', event);
