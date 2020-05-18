@@ -1,17 +1,26 @@
 <template>
-  <div :style="{ transform: 'scale('+ zoomScale+')'}">
-    <div v-if="whatWasHeard" class="what-was-heard" v-html="whatWasHeard" />
+  <div :style="{ transform: 'scale(' + zoomScale + ')' }">
+    <div v-if="whatWasHeard" class="what-was-heard" v-html="whatWasHeard"></div>
     <div v-if="mode == 'add-players'" class="add-players-container">
       <h2>Add Players:</h2>
-      <input ref="newPlayer" v-model="newPlayerName" type="text" maxlength="8" @keyup.enter="handleAddPlayer">
+      <input
+        ref="newPlayer"
+        v-model="newPlayerName"
+        type="text"
+        maxlength="8"
+        @keyup.enter="handleAddPlayer"
+      />
       <button href="#" @click="handleAddPlayer">Add Player</button>
       <button v-if="players.length > 0" href="#" @click="startGame">Play Yahtzee</button>
-
       <ol>
         <transition-group name="player-add-remove">
-          <li v-for="(player, pix) in players" :key="player.name" class="player" :name="player.name" @click="handleRemovePlayer(pix)">
-            {{ player.name }}
-          </li>
+          <li
+            v-for="(player, pix) in players"
+            :key="player.name"
+            class="player"
+            :name="player.name"
+            @click="handleRemovePlayer(pix)"
+          >{{ player.name }}</li>
         </transition-group>
       </ol>
 
@@ -37,31 +46,54 @@
               <h3>{{ section.name }}</h3>
             </div>
 
-            <div v-for="category in section.categories" :key="category.code" :class="section.code" class="cell category">
+            <div
+              v-for="category in section.categories"
+              :key="category.code"
+              :class="section.code"
+              class="cell category"
+            >
               <strong>{{ category.name }}</strong>
-              <div class="how">
-                {{ category.how }}
-              </div>
+              <div class="how">{{ category.how }}</div>
             </div>
 
-            <div v-for="total in section.totals" :key="total.code" :class="section.code" class="cell total">
+            <div
+              v-for="total in section.totals"
+              :key="total.code"
+              :class="section.code"
+              class="cell total"
+            >
               {{ total.name }}
-              <div v-if="total.how" class="how">
-                {{ total.how }}
-              </div>
+              <div v-if="total.how" class="how">{{ total.how }}</div>
             </div>
           </div>
 
-          <div v-for="(player, pix) in players" :key="player.name" :class="[(player.isCurrent) ? 'current' : '']" class="col player" :name="player.name">
+          <div
+            v-for="(player, pix) in players"
+            :key="player.name"
+            :class="[player.isCurrent ? 'current' : '']"
+            class="col player"
+            :name="player.name"
+          >
             <div v-if="section.showHeader" :class="section.code" class="header cell">
               <h3>{{ player.name.substr(0, 7) }}</h3>
             </div>
 
             <div v-for="category in section.categories" :key="category.code" class="cell category">
-              <ScoreInput :category="category" type="category" :player-index="pix" :player="player" :value="getScore(player, category)" />
+              <ScoreInput
+                :category="category"
+                type="category"
+                :player-index="pix"
+                :player="player"
+                :value="getScore(player, category)"
+              />
             </div>
 
-            <div v-for="total in section.totals" :key="total.code" :class="section.code" class="cell total">
+            <div
+              v-for="total in section.totals"
+              :key="total.code"
+              :class="section.code"
+              class="cell total"
+            >
               <ScoreInput :category="total" type="total" :value="player.scores[total.code] || 0" />
             </div>
           </div>
@@ -71,21 +103,26 @@
     </transition>
 
     <transition name="slide-left-fade">
-      <div
-        v-if="mode != 'add-players'"
-        class="scorebaord"
-      >
+      <div v-if="mode != 'add-players'" class="scorebaord">
         <div v-if="mode == 'playing'">
-          <div class="rounds">Round <strong>{{ round }}</strong> of {{ roundMax }}</div>
-          <div class="roundsLeft">{{ 1+roundMax-round }} play{{ 1+roundMax-round != 1 ? 's' : '' }} left</div>
+          <div class="rounds">
+            Round
+            <strong>{{ round }}</strong>
+            of {{ roundMax }}
+          </div>
+          <div class="roundsLeft">
+            {{ 1 + roundMax - round }} play{{ 1 + roundMax - round != 1 ? 's' : '' }}
+            left
+          </div>
         </div>
         <transition name="bounce">
           <div v-if="mode === 'end'">
-            <div class="rounds">
-              GAME OVER
-            </div>
+            <div class="rounds">GAME OVER</div>
             <div class="winner">
-              <h4>{{ getPlayersByScore()[0].name }}<br>IS THE WINNER</h4>
+              <h4>
+                {{ getPlayersByScore()[0].name }}
+                <br />IS THE WINNER
+              </h4>
             </div>
           </div>
         </transition>
@@ -93,19 +130,15 @@
         <div class="leaderboard">
           <h4>Yahtzee Leaderboard</h4>
           <div
-            v-for="(player) in getPlayersByScore()"
+            v-for="player in getPlayersByScore()"
             :key="player.name"
-            :class="['placement-'+ player.currentPosition]"
+            :class="['placement-' + player.currentPosition]"
             :name="player.name"
           >
             <div class="item">
-              <div class="placement" v-html="getPlacement(player)" />
-              <div class="name">
-                {{ player.name }}
-              </div>
-              <div class="score">
-                {{ player.final }}
-              </div>
+              <div class="placement" v-html="getPlacement(player)"></div>
+              <div class="name">{{ player.name }}</div>
+              <div class="score">{{ player.final }}</div>
             </div>
           </div>
         </div>
@@ -113,21 +146,19 @@
         <div v-if="mode !== 'end'" class="turn-info">
           <h4>{{ players[currentPlayerIndex].name }}'s Turn</h4>
           <div v-for="category in getPlayerCategories()" :key="category.code">
-            <div :class="[category.sectionCode, { used: category.hasScore }]" class="cell category">
-              {{ category.name }}
-            </div>
+            <div
+              :class="[category.sectionCode, { used: category.hasScore }]"
+              class="cell category"
+            >{{ category.name }}</div>
           </div>
         </div>
       </div>
     </transition>
 
     <!-- one modal -->
-    <modal name="hello-world">
-      hello, world!
-    </modal>
+    <modal name="hello-world">hello, world!</modal>
   </div>
 </template>
-
 <script>
 /*
  x git repo
@@ -168,12 +199,12 @@ import randomService from '../services/random.service';
 
 const utils = {
   // eslint-disable-next-line
-  toTitleCase: str => {
+  toTitleCase: (str) => {
     // eslint-disable-next-line
     return str.replace(
       /\w\S*/g,
       // eslint-disable-next-line
-      function(txt) {
+      function (txt) {
         // eslint-disable-next-line
         return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
       },
@@ -330,7 +361,12 @@ export default {
             how: 'Score 100 per',
             type: 'yahtzee-bonus',
             options: [100, 200, 300, 400],
-            listenFor: ['yahtzee bonus', 'yacht zee bonus', 'yacht Z bonus', 'yats zee bonus'],
+            listenFor: [
+              'yahtzee bonus',
+              'yacht zee bonus',
+              'yacht Z bonus',
+              'yats zee bonus',
+            ],
           },
         ],
         totals: [
@@ -441,11 +477,10 @@ export default {
       }
 
       // if the player is already in the list
-      if (this.players.some(player => player.name === cleanName)) {
+      if (this.players.some((player) => player.name === cleanName)) {
         soundService.playSound('invalid');
         return;
       }
-
 
       // eslint-disable-next-line
       const scores = {};
@@ -651,7 +686,11 @@ export default {
         this.updatePositions();
       }
 
-      if (!score.isOutOfOrderEntry && origScore == null && score.value != null) {
+      if (
+        !score.isOutOfOrderEntry
+        && origScore == null
+        && score.value != null
+      ) {
         // next player
         this.nextPlayer(pix);
       } else {
@@ -726,7 +765,9 @@ export default {
         this.whatWasHeard = `"${event.join('" <span class="or">or</span> "')}"`;
         // console.log('event', event);
         // console.log('event', this.whatWasHeard);
-        this.WhatWasHeardTimeout = setTimeout(() => { this.whatWasHeard = null; }, 5000);
+        this.WhatWasHeardTimeout = setTimeout(() => {
+          this.whatWasHeard = null;
+        }, 5000);
       });
 
       annyang.debug(true);
@@ -781,7 +822,6 @@ export default {
           regexp: new RegExp(`^at score for ${expression}$`, 'i'),
           callback: this.voiceCommandOpenScoreModal,
         },
-
       });
     },
     listenForPoints: function listenForPoints(category) {
@@ -794,7 +834,7 @@ export default {
       const playerIndex = this.currentPlayerIndex;
 
       const pointOptions = categoryService.getPointOptions(category);
-      const listenForOptions = (pointOptions) ? pointOptions.join('|') : '';
+      const listenForOptions = pointOptions ? pointOptions.join('|') : '';
 
       // build reg exp to listen, based on what is available
       const expression = `^(${listenForOptions})$`;
@@ -861,7 +901,11 @@ export default {
         for (let catIndex = 0; catIndex < categories.length; catIndex += 1) {
           const category = categories[catIndex];
           if (category.listenFor && !category.hasScore) {
-            for (let listenIndex = 0; listenIndex < category.listenFor.length; listenIndex += 1) {
+            for (
+              let listenIndex = 0;
+              listenIndex < category.listenFor.length;
+              listenIndex += 1
+            ) {
               if (category.listenFor[listenIndex].toLowerCase() === saidClean) {
                 return category;
               }
@@ -1149,7 +1193,7 @@ h3 {
   transition: all 1.33s ease;
 }
 .slide-up-fade-leave-active {
-  transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+  transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
 }
 .slide-up-fade-enter, .slide-up-fade-leave-to
 /* .slide-fade-leave-active below version 2.1.8 */ {
@@ -1161,7 +1205,7 @@ h3 {
   transition: all 1.33s ease;
 }
 .slide-left-fade-leave-active {
-  transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+  transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
 }
 .slide-left-fade-enter, .slide-left-fade-leave-to
 /* .slide-fade-leave-active below version 2.1.8 */ {
@@ -1179,18 +1223,22 @@ h3 {
   animation: bounce-in 0.5s;
 }
 .player-add-remove-leave-active {
-  color:red;
-  animation: letter_explode .9s 0s forwards;
+  color: red;
+  animation: letter_explode 0.9s 0s forwards;
   transition: 0.7s;
-  opacity:0;
+  opacity: 0;
   transform: scale(4) rotate(720deg);
   -moz-transform: scale(4) rotate(720deg);
   -webkit-transform: scale(4) rotate(720deg);
   -o-transform: scale(4) rotate(720deg);
 }
 @keyframes letter_explode {
-    0% {letter-spacing:0.1em;}
-    100% {letter-spacing:1em;}
+  0% {
+    letter-spacing: 0.1em;
+  }
+  100% {
+    letter-spacing: 1em;
+  }
 }
 @keyframes bounce-in {
   0% {
@@ -1210,7 +1258,7 @@ h3 {
 }
 
 .tooltip .tooltip-inner {
-  opacity: .9;
+  opacity: 0.9;
   background: #666;
   color: #ccc;
   border-radius: 16px;
@@ -1218,7 +1266,7 @@ h3 {
 }
 
 .tooltip .tooltip-arrow {
-  opacity: .9;
+  opacity: 0.9;
   width: 0;
   height: 0;
   border-style: solid;
@@ -1287,30 +1335,30 @@ h3 {
   margin-right: 0;
 }
 
-.tooltip[aria-hidden='true'] {
+.tooltip[aria-hidden="true"] {
   visibility: hidden;
   opacity: 0;
-  transition: opacity .15s, visibility .15s;
+  transition: opacity 0.15s, visibility 0.15s;
 }
 
-.tooltip[aria-hidden='false'] {
+.tooltip[aria-hidden="false"] {
   visibility: visible;
   opacity: 1;
-  transition: opacity .15s;
+  transition: opacity 0.15s;
 }
 
 .what-was-heard {
-    font-family: Arial;
-    width: 100%;
-    color: purple;
-    background: white;
-    text-align: center;
-    font-size: 3vh;
-    z-index: 100;
-    padding: 10px;
-    position: fixed;
-    border-radius: 20px;
-    box-sizing: border-box;
+  font-family: Arial;
+  width: 100%;
+  color: purple;
+  background: white;
+  text-align: center;
+  font-size: 3vh;
+  z-index: 100;
+  padding: 10px;
+  position: fixed;
+  border-radius: 20px;
+  box-sizing: border-box;
 }
 
 .what-was-heard .or {
