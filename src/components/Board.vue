@@ -1464,4 +1464,20 @@ h3 {
     font-size: 2.2vh;
   }
 }
+
+/* big fullscreen */
+@media only screen and (min-height: 1000px) {
+  .board .col {
+    width: 270px;
+  }
+  .add-players-container button {
+    font-size: 25px;
+  }
+  .current .needs {
+    font-size: 20px;
+  }
+  .board .cell {
+    height: 4.45vh;
+  }
+}
 </style>
