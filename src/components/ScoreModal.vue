@@ -3,7 +3,7 @@
     <h4>
       Please enter the
       <strong>{{ category.name }}</strong>
-      <br>score for
+      <br />score for
       <strong>{{ player.name }}</strong>
     </h4>
 
@@ -16,19 +16,20 @@
       >
         <div class="option">
           {{ option }}
-          <div v-if="category.code != 'yb' && option !== 0 && options.length >= 5 && options.length <= 6" class="dice">
-            <img v-for="dice in options.length-index-1" :key="dice" :src="`assets/dice-${category.code}.png`">
+          <div
+            v-if="category.code != 'yb' && option !== 0 && options.length >= 5 && options.length <= 6"
+            class="dice"
+          >
+            <img
+              v-for="dice in options.length-index-1"
+              :key="dice"
+              :src="`assets/dice-${category.code}.png`"
+            />
           </div>
         </div>
       </div>
-      <div
-        v-if="value !== null"
-        class="full"
-        @click="handleClick(null)"
-      >
-        <div class="option">
-          Clear Score ({{ value }})
-        </div>
+      <div v-if="value !== null" class="full" @click="handleClick(null)">
+        <div class="option">Clear Score ({{ value }})</div>
       </div>
     </div>
   </div>
@@ -107,7 +108,7 @@ h4 strong {
 }
 
 div {
-  font-size: 40px;
+  font-size: 5vh;
 }
 
 .options {
@@ -116,6 +117,7 @@ div {
   width: 740px;
   justify-content: center;
   /* justify-content: space-between; */
+  margin: 0 auto;
 }
 
 .option {
@@ -181,9 +183,37 @@ div {
 }
 
 .dice img {
-    margin: 0 4px;
-    margin-top: 14px;
-    width: 48px;
-    background-color:white;
+  margin: 0 4px;
+  margin-top: 14px;
+  width: 48px;
+  background-color: white;
+}
+
+/* mobile */
+@media only screen and (max-width: 600px) {
+  div {
+    font-size: 2.5vh;
+  }
+  .options {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+  .option {
+    margin: 2px;
+    text-align: center;
+    flex: 1;
+    width: 11vw;
+    padding: 10px;
+    min-width: unset;
+  }
+  .upper .option {
+    width: 37vw;
+    min-width: unset;
+  }
+  .dice img {
+    width: 24px;
+    margin: 0 2px;
+  }
 }
 </style>

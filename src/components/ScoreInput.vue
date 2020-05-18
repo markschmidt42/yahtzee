@@ -121,9 +121,10 @@ export default {
       },
       {
         name: 'input-modal',
-        width: 780,
+        width: '95%',
         height: 'auto',
-        draggable: true,
+        // draggable: false fixes the mobile clicking issue
+        draggable: false,
       });
       // {
       //   'before-close': (event) => { console.log('this will be called before the modal closes', event); },
@@ -156,8 +157,12 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style>
+    .v--modal-overlay .v--modal-box {
+      border-radius: 20px;
+    }
     .input {
-        font-size:30px;
+        /* font-size:30px; */
+        font-size:3.5vh;
         text-align:center;
         background-color: inherit;
         display: table-cell;
@@ -173,9 +178,9 @@ export default {
     }
 
     .current .needs {
-      color: #aaa;
-      font-size:.8em;
-      padding: 12px 0;
+      color: #0688fa;
+      font-size:1.65vh;
+      padding-top: 1.1vh;
     }
 
     .current .needs.active {
@@ -203,6 +208,16 @@ export default {
       }
       to {
         transform: scale(1);
+      }
+    }
+
+    @media only screen and (max-height: 800px) {
+      .input {
+        font-size:24px;
+      }
+
+      .current .needs {
+        padding-top: 0.8vh;
       }
     }
 

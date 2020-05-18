@@ -103,17 +103,16 @@
     </transition>
 
     <transition name="slide-left-fade">
-      <div v-if="mode != 'add-players'" class="scorebaord">
+      <div v-if="mode != 'add-players'" class="scoreboard">
         <div v-if="mode == 'playing'">
           <div class="rounds">
             Round
             <strong>{{ round }}</strong>
             of {{ roundMax }}
           </div>
-          <div class="roundsLeft">
-            {{ 1 + roundMax - round }} play{{ 1 + roundMax - round != 1 ? 's' : '' }}
-            left
-          </div>
+          <div
+            class="roundsLeft"
+          >{{ 1 + roundMax - round }} play{{ 1 + roundMax - round != 1 ? 's' : '' }} left</div>
         </div>
         <transition name="bounce">
           <div v-if="mode === 'end'">
@@ -294,7 +293,7 @@ export default {
             how: 'If total score is >= 63. +35',
             calc: 'upper-bonus',
           },
-          { code: 'ugt', name: 'Upper Section Total', calc: ['uts', 'bonus'] },
+          { code: 'ugt', name: 'Upper Total', calc: ['uts', 'bonus'] },
         ],
       },
       {
@@ -372,10 +371,10 @@ export default {
         totals: [
           {
             code: 'flts',
-            name: 'Lower Section Total',
+            name: 'Lower Total',
             calc: ['3oak', '4oak', 'fh', 'smst', 'lgst', 'yhtz', 'chnc', 'yb'],
           },
-          { code: 'futs', name: 'Upper Section Total', calc: ['ugt'] },
+          { code: 'futs', name: 'Upper Total', calc: ['ugt'] },
         ],
       },
       {
@@ -946,10 +945,16 @@ body {
   background-color: #333;
 }
 
+@media only screen and (max-width: 700px) {
+  body {
+    overflow: auto;
+  }
+}
+
 .add-players-container {
   color: white;
   padding: 40px;
-  font-size: 40px;
+  font-size: 7vh;
   max-width: 400px;
   margin: 15px auto;
 }
@@ -960,7 +965,7 @@ body {
 }
 
 .add-players-container button {
-  font-size: 23px;
+  font-size: 2.5vh;
   margin: 10px 0;
   padding: 10px 20px;
 }
@@ -1007,7 +1012,7 @@ h3 {
 .board .col {
   flex-grow: 0; /* default 0 */
   background-color: #ccc;
-  width: 280px;
+  width: 230px;
   font-size: 20px;
   border: solid 1px black;
   border-right: 0;
@@ -1018,22 +1023,37 @@ h3 {
 }
 
 .board .cell {
-  height: 44.5px;
+  height: 4.4vh;
   border-bottom: solid 1px black;
   display: grid;
   vertical-align: middle;
-  padding: 2px;
+  /* padding: 2px; */
+}
+@media only screen and (max-height: 800px) {
+  .board .cell {
+    height: 30px;
+  }
 }
 
 .board .header.cell {
-  height: auto;
+  /* height: auto; */
+}
+
+.board .header h3 {
+  font-size: 2.5vh;
 }
 
 .how {
-  font-size: 0.8em;
+  font-size: 1.5vh;
   font-style: italic;
   font-weight: normal;
   margin-top: -5px; /* janky */
+}
+
+@media only screen and (max-height: 800px) {
+  .how {
+    display: none;
+  }
 }
 
 .col.label {
@@ -1042,6 +1062,12 @@ h3 {
 
 .label {
   text-align: left;
+}
+
+.label .category,
+.label .total {
+  padding-left: 8px;
+  font-size: 2.4vh;
 }
 
 .player .category,
@@ -1056,7 +1082,7 @@ h3 {
 
 .cell.total {
   background-color: #aaa;
-  font-size: 22px;
+  /* font-size: 22px; */
   font-weight: bold;
 }
 
@@ -1070,7 +1096,7 @@ h3 {
 
 .cell.grand-total {
   background-color: limegreen;
-  font-size: 34px;
+  /* font-size: 34px; */
   text-transform: uppercase;
   font-weight: bold;
 }
@@ -1106,7 +1132,7 @@ h3 {
   background-position-x: 95%;
 } */
 
-.scorebaord {
+.scoreboard {
   position: absolute;
   top: 0;
   right: 0;
@@ -1116,16 +1142,24 @@ h3 {
   padding: 10px;
 }
 
-.scorebaord .rounds {
+@media only screen and (max-width: 700px) {
+  .scoreboard {
+    position: relative;
+    top: 0;
+    left: 0;
+  }
+}
+
+.scoreboard .rounds {
   color: blue;
 }
 
-.scorebaord .roundsLeft {
+.scoreboard .roundsLeft {
   font-size: 0.8em;
   font-style: italic;
 }
 
-.scorebaord .leaderboard {
+.scoreboard .leaderboard {
   margin-top: 60px;
   text-align: left;
   border-bottom: solid 1px black;
@@ -1364,5 +1398,13 @@ h3 {
 .what-was-heard .or {
   color: #999;
   font-size: 2vh;
+}
+
+/* mobile */
+@media only screen and (max-height: 800px) {
+  .label .category,
+  .label .total {
+    font-size: 2.2vh;
+  }
 }
 </style>
