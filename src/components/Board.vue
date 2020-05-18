@@ -10,10 +10,12 @@
         maxlength="8"
         @keyup.enter="handleAddPlayer"
       />
-      <button href="#" @click="handleAddPlayer">Add Player</button>
-      <button v-if="players.length > 0" href="#" @click="startGame">
-        Play Yahtzee
-      </button>
+      <div class="btn-container">
+        <button href="#" @click="handleAddPlayer">Add Player</button>
+        <button v-if="players.length > 0" href="#" @click="startGame">
+          Play Yahtzee
+        </button>
+      </div>
       <ol>
         <transition-group name="player-add-remove">
           <li
@@ -964,6 +966,10 @@ export default {
   user-select: none;
 }
 
+h2 {
+  font-size: 5vh;
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -990,14 +996,14 @@ body {
   width: 100%;
 }
 
-.add-players-container button {
-  font-size: 2.5vh;
-  margin: 10px 0;
-  padding: 10px 20px;
+.btn-container {
+  text-align: left;
 }
 
-.add-players-container button:last-of-type {
-  margin-left: 10px;
+.add-players-container button {
+  font-size: 2.5vh;
+  margin-right: 10px;
+  padding: 10px 20px;
 }
 
 .add-players-container ol {
