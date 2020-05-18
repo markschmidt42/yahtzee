@@ -1190,6 +1190,7 @@ h3 {
   font-size: 2em;
   background: #eee;
   padding: 10px;
+  height: 100vh;
 }
 
 @media only screen and (max-width: 700px) {
@@ -1254,14 +1255,24 @@ h3 {
 }
 
 .turn-info .category {
-  font-size: 0.9em;
+  font-size: 0.8em;
   font-weight: bold;
+  width: 50%;
+  float: left;
 }
 
 .turn-info .used {
   text-decoration: line-through;
-  font-size: 0.6em;
   font-weight: normal;
+  color: #ccc;
+}
+
+.used.upper-section {
+  color: #6ea9cc;
+}
+
+.used.lower-section {
+  color: #cc685d;
 }
 
 .winner {
