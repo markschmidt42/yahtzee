@@ -11,7 +11,9 @@
         @keyup.enter="handleAddPlayer"
       />
       <button href="#" @click="handleAddPlayer">Add Player</button>
-      <button v-if="players.length > 0" href="#" @click="startGame">Play Yahtzee</button>
+      <button v-if="players.length > 0" href="#" @click="startGame">
+        Play Yahtzee
+      </button>
       <ol>
         <transition-group name="player-add-remove">
           <li
@@ -20,7 +22,9 @@
             class="player"
             :name="player.name"
             @click="handleRemovePlayer(pix)"
-          >{{ player.name }}</li>
+          >
+            {{ player.name }}
+          </li>
         </transition-group>
       </ol>
 
@@ -42,7 +46,11 @@
       <div v-if="mode != 'add-players'">
         <div v-for="section in sections" :key="section.name" class="board">
           <div class="col label">
-            <div v-if="section.showHeader" :class="section.code" class="header cell">
+            <div
+              v-if="section.showHeader"
+              :class="section.code"
+              class="header cell"
+            >
               <h3>{{ section.name }}</h3>
             </div>
 
@@ -74,11 +82,19 @@
             class="col player"
             :name="player.name"
           >
-            <div v-if="section.showHeader" :class="section.code" class="header cell">
+            <div
+              v-if="section.showHeader"
+              :class="section.code"
+              class="header cell"
+            >
               <h3>{{ player.name.substr(0, 7) }}</h3>
             </div>
 
-            <div v-for="category in section.categories" :key="category.code" class="cell category">
+            <div
+              v-for="category in section.categories"
+              :key="category.code"
+              class="cell category"
+            >
               <ScoreInput
                 :category="category"
                 type="category"
@@ -94,7 +110,11 @@
               :class="section.code"
               class="cell total"
             >
-              <ScoreInput :category="total" type="total" :value="player.scores[total.code] || 0" />
+              <ScoreInput
+                :category="total"
+                type="total"
+                :value="player.scores[total.code] || 0"
+              />
             </div>
           </div>
         </div>
@@ -110,9 +130,12 @@
             <strong>{{ round }}</strong>
             of {{ roundMax }}
           </div>
-          <div
-            class="roundsLeft"
-          >{{ 1 + roundMax - round }} play{{ 1 + roundMax - round != 1 ? 's' : '' }} left</div>
+          <div class="roundsLeft">
+            {{ 1 + roundMax - round }} play{{
+              1 + roundMax - round != 1 ? 's' : ''
+            }}
+            left
+          </div>
         </div>
         <transition name="bounce">
           <div v-if="mode === 'end'">
@@ -148,7 +171,9 @@
             <div
               :class="[category.sectionCode, { used: category.hasScore }]"
               class="cell category"
-            >{{ category.name }}</div>
+            >
+              {{ category.name }}
+            </div>
           </div>
         </div>
       </div>
@@ -206,7 +231,7 @@ const utils = {
       function (txt) {
         // eslint-disable-next-line
         return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-      },
+      }
     );
   },
 };
@@ -441,7 +466,7 @@ export default {
     updateZoom: function updateZoom(amount) {
       this.zoomScale += amount;
       document.getElementsByTagName(
-        'body',
+        'body'
       )[0].style.transform = `'scale('${this.zoomScale})'`;
     },
     addPlayers: function addPlayers(names) {
@@ -580,7 +605,8 @@ export default {
 
       // console.log('sorted', sorted);
       this.players.forEach((player, idx) => {
-        this.players[idx].currentPosition = findWithAttr(sorted, 'final', this.players[idx].final) + 1;
+        this.players[idx].currentPosition =
+          findWithAttr(sorted, 'final', this.players[idx].final) + 1;
       });
     },
     getPlacement: (player) => {
@@ -686,9 +712,9 @@ export default {
       }
 
       if (
-        !score.isOutOfOrderEntry
-        && origScore == null
-        && score.value != null
+        !score.isOutOfOrderEntry &&
+        origScore == null &&
+        score.value != null
       ) {
         // next player
         this.nextPlayer(pix);
@@ -931,10 +957,10 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style>
-@import url("https://fonts.googleapis.com/css?family=Lexend+Deca&display=swap");
+@import url('https://fonts.googleapis.com/css?family=Lexend+Deca&display=swap');
 
 * {
-  font-family: "Lexend Deca";
+  font-family: 'Lexend Deca';
   user-select: none;
 }
 
@@ -1066,8 +1092,11 @@ h3 {
 
 .label .category,
 .label .total {
-  padding-left: 8px;
+  padding-left: 3px;
   font-size: 2.4vh;
+}
+.label .category {
+  padding-left: 8px;
 }
 
 .player .category,
@@ -1309,11 +1338,11 @@ h3 {
   border-color: #666;
 }
 
-.tooltip[x-placement^="top"] {
+.tooltip[x-placement^='top'] {
   margin-bottom: 5px;
 }
 
-.tooltip[x-placement^="top"] .tooltip-arrow {
+.tooltip[x-placement^='top'] .tooltip-arrow {
   border-width: 5px 5px 0 5px;
   border-left-color: transparent !important;
   border-right-color: transparent !important;
@@ -1324,11 +1353,11 @@ h3 {
   margin-bottom: 0;
 }
 
-.tooltip[x-placement^="bottom"] {
+.tooltip[x-placement^='bottom'] {
   margin-top: 5px;
 }
 
-.tooltip[x-placement^="bottom"] .tooltip-arrow {
+.tooltip[x-placement^='bottom'] .tooltip-arrow {
   border-width: 0 5px 5px 5px;
   border-left-color: transparent !important;
   border-right-color: transparent !important;
@@ -1339,11 +1368,11 @@ h3 {
   margin-bottom: 0;
 }
 
-.tooltip[x-placement^="right"] {
+.tooltip[x-placement^='right'] {
   margin-left: 5px;
 }
 
-.tooltip[x-placement^="right"] .tooltip-arrow {
+.tooltip[x-placement^='right'] .tooltip-arrow {
   border-width: 5px 5px 5px 0;
   border-left-color: transparent !important;
   border-top-color: transparent !important;
@@ -1354,11 +1383,11 @@ h3 {
   margin-right: 0;
 }
 
-.tooltip[x-placement^="left"] {
+.tooltip[x-placement^='left'] {
   margin-right: 5px;
 }
 
-.tooltip[x-placement^="left"] .tooltip-arrow {
+.tooltip[x-placement^='left'] .tooltip-arrow {
   border-width: 5px 0 5px 5px;
   border-top-color: transparent !important;
   border-right-color: transparent !important;
@@ -1369,13 +1398,13 @@ h3 {
   margin-right: 0;
 }
 
-.tooltip[aria-hidden="true"] {
+.tooltip[aria-hidden='true'] {
   visibility: hidden;
   opacity: 0;
   transition: opacity 0.15s, visibility 0.15s;
 }
 
-.tooltip[aria-hidden="false"] {
+.tooltip[aria-hidden='false'] {
   visibility: visible;
   opacity: 1;
   transition: opacity 0.15s;
@@ -1402,6 +1431,13 @@ h3 {
 
 /* mobile */
 @media only screen and (max-height: 800px) {
+  .board .col {
+    width: 170px;
+  }
+
+  .board .header h3 {
+    font-size: 2.2vh;
+  }
   .label .category,
   .label .total {
     font-size: 2.2vh;

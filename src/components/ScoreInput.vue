@@ -2,6 +2,7 @@
   <div
     v-if="loaded"
     v-tooltip.bottom="(value === null && !isOutOfOrderEntry()) ? `Say &quot;Enter score for ${settings.category.name}&quot;` : ''"
+    v-long-press="500"
     :class="[settings.class, settings.category.type, { active: hover }, { needs: (value == null) }, { used: (value != null) }]"
     class="input"
     type="text"
@@ -10,6 +11,7 @@
     @mouseleave="hover = false"
     @click="handleOnClick()"
     @dblclick="handleOnDblClick()"
+    @long-press-start="handleOnDblClick()"
   >
     {{ value == null && settings.player.isCurrent ? settings.category.name : value }}
   </div>
