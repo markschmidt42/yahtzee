@@ -412,6 +412,21 @@ export default {
       },
     ],
   }), // end of methods
+  created() {
+    window.addEventListener('beforeunload', (event) => {
+      // eslint-disable-next-line no-alert
+      const message = 'Are you sure?';
+      if (typeof event === 'undefined') {
+        // eslint-disable-next-line no-param-reassign
+        event = window.event;
+      }
+      if (event) {
+        // eslint-disable-next-line no-param-reassign
+        event.returnValue = message;
+      }
+      return message;
+    });
+  },
   mounted() {
     this.resetGame();
 
@@ -944,7 +959,7 @@ export default {
     },
   },
   ready() {
-    window.addEventListener('keypress', function keyUp(event) {
+    window.addEventListener('keypress', (event) => {
       // If down arrow was pressed...
       // console.log(event.keyCode, event.key);
       if (event.keyCode === 40) {
