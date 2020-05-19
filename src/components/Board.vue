@@ -36,7 +36,7 @@
         </transition-group>
       </ol>
 
-      <div class="voice-help">
+      <div v-if="listening" class="voice-help">
         <strong>Say:</strong>
         <ul>
           <li>"Add Jane"</li>
