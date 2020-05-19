@@ -2,6 +2,11 @@
   <div :style="{ transform: 'scale(' + zoomScale + ')' }">
     <div v-if="whatWasHeard" class="what-was-heard" v-html="whatWasHeard"></div>
     <div v-if="mode == 'add-players'" class="add-players-container">
+      <h1>Yahtzee Scoreboard</h1>
+      <div class="voice-control">
+        <input v-model="listening" id="voice-chk-one" type="checkbox" />
+        <label for="voice-chk-one">Use Voice Control</label>
+      </div>
       <h2>Add Players:</h2>
       <input
         ref="newPlayer"
@@ -16,6 +21,7 @@
           Play Yahtzee
         </button>
       </div>
+
       <ol>
         <transition-group name="player-add-remove">
           <li
@@ -178,6 +184,10 @@
             </div>
           </div>
         </div>
+        <div class="voice-control">
+          <input v-model="listening" id="voice-chk" type="checkbox" />
+          <label for="voice-chk">Use Voice Control</label>
+        </div>
       </div>
     </transition>
 
@@ -245,6 +255,8 @@ export default {
   },
   data: () => ({
     zoomScale: 1,
+    listening: true,
+    // speechRecognitionDisabled: false,
     WhatWasHeardTimeout: null,
     whatWasHeard: null,
     mode: 'add-players',
@@ -412,6 +424,21 @@ export default {
       },
     ],
   }), // end of methods
+  watch: {
+    listening: {
+      handler(val, oldVal) {
+        console.log(val, oldVal);
+        if (val) {
+          // turn it on
+          // figure out what state we are in, and load up those commands
+          this.resumeListening();
+        } else {
+          // turn it off
+          this.stopListening();
+        }
+      },
+    },
+  },
   created() {
     window.addEventListener('beforeunload', (event) => {
       // eslint-disable-next-line no-alert
@@ -579,6 +606,14 @@ export default {
       this.players = [];
       this.focusOnNewPlayerAdd();
       this.listenForNames();
+    },
+    stopListening: function stopListening() {
+      this.listening = false;
+      annyang.abort();
+    },
+    resumeListening: function resumeListening() {
+      this.listening = true;
+      annyang.resume();
     },
     startGame: function startGame() {
       if (!this.players.length) {
@@ -796,10 +831,20 @@ export default {
         },
         'add (player) :name': this.addPlayer,
         'add (players) *name': this.addPlayers,
+        'and (player) :name': this.addPlayer,
+        'and (players) *name': this.addPlayers,
+
         'remove (the) (last) player': this.removePlayer,
+
         'start (the) game': this.startGame,
         'play (the) game': this.startGame,
         'play yahtzee': this.startGame,
+
+        'stop listening': this.stopListening,
+        'turn off mic': this.stopListening,
+        'turn off microphone': this.stopListening,
+        'shut off mic': this.stopListening,
+        'shut off microphone': this.stopListening,
       });
 
       annyang.addCallback('resultNoMatch', (event) => {
@@ -814,6 +859,10 @@ export default {
 
       annyang.debug(true);
       annyang.start();
+      // this.speechRecognitionDisabled = annyang.getSpeechRecognizer();
+      // if (!annyang.isListening()) {
+      //   this.speechRecognitionDisabled = true;
+      // }
     },
     listenForPlayerCommands: function listenForPlayerCommands() {
       annyang.removeCommands();
@@ -981,8 +1030,12 @@ export default {
   user-select: none;
 }
 
+h1 {
+  font-size: 4vh;
+  color: #0688fa;
+}
 h2 {
-  font-size: 5vh;
+  font-size: 3vh;
 }
 
 body {
@@ -1000,15 +1053,22 @@ body {
 
 .add-players-container {
   color: white;
-  padding: 40px;
-  font-size: 7vh;
-  max-width: 400px;
+  padding: 0 10px;
+  font-size: 5vh;
+  max-width: 500px;
   margin: 15px auto;
 }
 
-.add-players-container input {
+.add-players-container input[type='text'] {
   font-size: 40px;
   width: 100%;
+}
+
+.add-players-container .voice-control {
+  font-size: 14pt;
+}
+.add-players-container .voice-control label {
+  margin-left: 4px;
 }
 
 .btn-container {
@@ -1265,6 +1325,14 @@ h3 {
   text-decoration: line-through;
   font-weight: normal;
   color: #ccc;
+}
+
+.voice-control {
+  margin-top: 8px;
+  font-size: 0.5em;
+}
+.voice-control * {
+  cursor: pointer;
 }
 
 .used.upper-section {
